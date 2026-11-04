@@ -6816,6 +6816,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     return wrap;
   }
   window.__storyView=storyView;
+  window.__STORIES=STORIES;
   window.__storyTitle=id=>STORIES[id]&&STORIES[id][1];window.__storyPart=id=>STORIES[id]&&UNITS[STORIES[id][2]].join(' ');
   const pick=a=>a[Math.floor(Math.random()*a.length)];
   if(X.STK&&!X.STK.some(z=>z[0]==='london')){X.STK.push(['london','🇬🇧','До Лондон и обратно','Завършете „Пътят напред"',()=>!!S.path2Fin])}
@@ -7675,6 +7676,512 @@ body:not(.on-prog) #manual,body:not(.on-prog) #levels{display:none!important}
       h('span',{class:'li'},'🧱'),h('span',{class:'lt'},h('b',null,'Match Madness'),h('span',null,'Свържете думите')),h('span',{class:'la'},'›'));
     tl.append(b)}catch(e){}};
   try{if(S.tab==='today')renderPanel()}catch(e){}})();
+</script>
+<style>
+/* ===== v51: Слушалня ===== */
+.lsstat{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted)}
+.lsstat b{color:var(--ink)}
+.lsgo{align-self:stretch;text-align:center;justify-content:center}
+.lsgrp{margin-top:6px}.lsgrp h3{font-family:var(--f-display);font-size:18px;margin:0;color:var(--rose)}.lsgrp p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.stcard .la{color:var(--muted);font-size:20px}
+.lsw{gap:12px}
+.lshead small{font-size:12px;color:var(--muted);font-weight:700}
+.lshead h3{font-family:var(--f-display);font-size:22px;margin:2px 0 0;color:var(--rose);line-height:1.15}
+.lshead p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+.lspick{display:flex;gap:8px;align-items:center}
+.lssel{flex:1;min-width:0;font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0 10px}
+.lsnb{font:inherit;font-size:22px;line-height:1;min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.lsnb:disabled{opacity:.35;cursor:default}
+.lstgs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 4px}
+.lstgs::-webkit-scrollbar{display:none}
+.lstg{flex:none;font:inherit;font-size:13.5px;font-weight:600;white-space:nowrap;min-height:38px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.lstg[aria-pressed="true"]{background:var(--rose-soft);border-color:var(--rose);color:var(--ink)}
+.lstg:disabled{opacity:.4;cursor:default}
+.lswarn{margin:0;font-size:13.5px;background:var(--gold-soft);border-radius:12px;padding:8px 12px}
+.lsjump{display:flex;gap:6px;flex-wrap:wrap}
+.lsjump a{font-size:13px;font-weight:600;color:var(--rose);text-decoration:none;padding:4px 10px;border-radius:999px;background:var(--rose-soft)}
+.lstr{display:flex;flex-direction:column;gap:6px;background:var(--ground);border-radius:16px;padding:10px}
+.lsln{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:14px;border:1px solid transparent;background:var(--surface)}
+.lstr.dlg .lsln{max-width:90%;border-radius:16px 16px 16px 4px;box-shadow:0 2px 0 var(--tile-edge)}
+.lstr.dlg .lsln.me{align-self:flex-end;flex-direction:row-reverse;background:var(--tab-green-soft,#E3F3EA);border-radius:16px 16px 4px 16px}
+.lstr.dlg .lsln.me .lsbody{text-align:right}
+.lsln.live{border-color:var(--rose);box-shadow:0 0 0 2px var(--rose-soft)}
+.lspb{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--rose);font-size:13px;cursor:pointer;display:grid;place-items:center;padding:0 0 0 2px}
+.lspb.on{background:var(--rose);border-color:var(--rose);color:var(--surface)}
+.lsbody{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px;padding-top:4px}
+.lswho{font-size:11.5px;font-weight:800;color:var(--rose);text-transform:uppercase;letter-spacing:.04em}
+.lsln.me .lswho{color:var(--ok)}
+.lsen{font-size:17px;line-height:1.45;transition:filter .2s}
+.lw{border-radius:3px;transition:background-color .12s}
+.lw.cur{background:var(--gold-soft);text-decoration:underline;text-decoration-color:var(--rose);text-decoration-thickness:2.5px;text-underline-offset:5px}
+.lsw.nofol .lw.cur{background:none;text-decoration:none}
+.lsw.notext .lsen{filter:blur(6px);cursor:pointer;user-select:none}
+.lsw.notext .lsen.peek{filter:none}
+.lsbg{display:none;font-size:14px;color:var(--muted);line-height:1.35}
+.lsw.bg .lsbg{display:block}
+.lsbgall{background:var(--surface);border-radius:12px;padding:8px 10px}
+.lsex{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;scroll-margin-top:60px}
+.lsex h4{margin:0;font-family:var(--f-display);font-size:18px}
+.lsnote{margin:0;font-size:13.5px;color:var(--muted)}
+.lsqi{display:flex;flex-direction:column;gap:6px;padding-top:10px;border-top:1px dashed var(--line)}
+.lsqq{display:flex;gap:8px;align-items:center;font-weight:700;font-size:16px}
+.lsopts{display:flex;flex-direction:column;gap:6px}
+.lsopts.tf{flex-direction:row}.lsopts.tf .lsopt{flex:1;text-align:center}
+.lsopt{font:inherit;font-size:15.5px;text-align:left;min-height:46px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;box-shadow:0 2px 0 var(--tile-edge)}
+.lsopt.ok{background:var(--tab-green-soft,#E3F3EA);border-color:var(--ok);color:var(--ink);font-weight:700}
+.lsopt.bad{border-color:var(--bad);color:var(--bad);opacity:.75;text-decoration:line-through}
+.lsopts.over .lsopt:not(.ok){opacity:.55}
+.lsw.showans .lsopt.right{outline:2.5px solid var(--ok);outline-offset:1px}
+.lsscore{font-size:14px;color:var(--muted);font-weight:700}
+.lsscore.done{color:var(--ok)}
+.lsbank{display:flex;flex-wrap:wrap;gap:6px}
+.lschip{font-size:15px}
+.lschip.used{opacity:.4}
+.lsgap{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}
+.lsgs{flex:1;min-width:0;font-size:16.5px;line-height:2;padding-top:2px}
+.lsin{font:inherit;font-size:16.5px;width:7.5em;max-width:60%;border:0;border-bottom:2px solid var(--muted);background:transparent;color:var(--ink);text-align:center;padding:0 2px;border-radius:0}
+.lsin:focus{outline:none;border-bottom-color:var(--rose)}
+.lsin.ok{border-color:var(--ok);color:var(--ok);font-weight:700}
+.lsin.bad{border-color:var(--bad);color:var(--bad)}
+.lsans{display:none;font-size:13px;color:var(--ok);line-height:1.4}
+.lsw.showans .lsans{display:block}
+.lsrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lsrow .btn{font-size:15px}
+.lsbld{display:flex;flex-direction:column;gap:10px}
+.lsbtop{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);font-weight:700}
+.lsbplay{align-self:flex-start}
+.lsbans{min-height:58px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border:2px dashed var(--line);border-radius:12px;background:var(--ground)}
+.lsbans:empty::before{content:"Докоснете думите отдолу в реда, в който ги чувате";color:var(--muted);font-size:13.5px;padding:0 4px}
+.lsbans.ok{border-style:solid;border-color:var(--ok);background:var(--tab-green-soft,#E3F3EA)}
+.lsbans.bad{border-style:solid;border-color:var(--bad)}
+.lsbbank{display:flex;flex-wrap:wrap;gap:6px;min-height:46px}
+.lstile{font:inherit;font-size:16px;min-height:44px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);border-bottom-width:3px;background:var(--surface);color:var(--ink);cursor:pointer;touch-action:manipulation}
+.lsbans .lstile{border-bottom-width:1px}
+.lsbres{display:flex;flex-direction:column;gap:2px}
+.lsbres .okc{color:var(--ok)}.lsbres .badc{color:var(--bad)}
+.lsbs{font-size:16.5px}.lsbg2{font-size:14px;color:var(--muted)}
+.lsbdone{display:flex;flex-direction:column;gap:10px;align-items:flex-start}.lsbdone b{font-size:20px}
+.lsend{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.lsend .btn{font-size:14.5px}
+.lsdock{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:8px;background:var(--surface);border-top:1px solid var(--line);
+  padding:8px max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));box-shadow:0 -6px 16px -10px rgba(0,0,0,.25)}
+.lspm{flex:1;min-height:46px;justify-content:center;text-align:center;font-size:16px}
+.lsspl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.lsspl span{display:none}
+.lsspd{font:inherit;font-size:15px;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0 6px}
+@media (min-width:701px){.lsdock{left:50%;right:auto;transform:translateX(-50%);width:min(760px,100%);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0}.lsspl span{display:inline}}
+body.lsdocked #panel{padding-bottom:96px}
+body.lsdocked .gfab{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
+.lsme .lsbar{height:10px;border-radius:99px;background:var(--ground);overflow:hidden}
+.lsme .lsbar i{display:block;height:100%;background:var(--rose);border-radius:99px}
+.lsme h3{margin:0}
+.lsme .btn{align-self:flex-start}
+@media (prefers-reduced-motion:reduce){.lsen,.lw{transition:none}}
+</style>
+<script>
+/* everyday audio scenes: lines [speaker, en, bg]; questions [q, right, wrong, wrong] or ['tf', statement, true|false] */
+const LS_SC=[
+ {id:'station',t:'Съобщение на гарата',e:'🚆',l:[
+  ['Високоговорител','Attention, please.','Внимание, моля.'],
+  ['Високоговорител','The train to Oxford at ten fifteen will leave from platform four.','Влакът за Оксфорд в десет и петнайсет ще тръгне от четвърти перон.'],
+  ['Високоговорител','The train is ten minutes late.','Влакът закъснява с десет минути.'],
+  ['Високоговорител','We are sorry for the delay.','Извиняваме се за закъснението.']],
+  q:[['Which platform does the train leave from?','Platform four','Platform ten','Platform two'],['tf','The train is on time.',false]]},
+ {id:'till',t:'На касата',e:'🛒',l:[
+  ['Касиерката','Hello. Do you have a bag?','Здравейте. Имате ли торбичка?'],
+  ['Клиентът','No, I don\'t. Can I buy one?','Не, нямам. Може ли да си купя?'],
+  ['Касиерката','Yes, it\'s twenty pence.','Да, струва двайсет пенса.'],
+  ['Касиерката','That\'s fourteen pounds fifty, please.','Общо четиринайсет паунда и петдесет, моля.'],
+  ['Клиентът','Here\'s twenty pounds.','Ето двайсет паунда.'],
+  ['Касиерката','Thank you. Here\'s your change, five pounds fifty. Have a nice day!','Благодаря. Ето ви рестото, пет паунда и петдесет. Приятен ден!']],
+  q:[['How much does the customer pay in total?','£14.50','£20','£5.50'],['tf','The customer has a bag.',false]]},
+ {id:'book',t:'Резервация по телефона',e:'📞',l:[
+  ['Ресторантът','Hello, Rosa\'s Restaurant.','Ало, ресторант „Роза".'],
+  ['Жената','Hi. I\'d like to book a table for Friday, please.','Здравейте. Искам да запазя маса за петък, моля.'],
+  ['Ресторантът','For how many people?','За колко души?'],
+  ['Жената','For four people, at seven o\'clock.','За четирима, в седем часа.'],
+  ['Ресторантът','I\'m sorry, seven o\'clock is full. Is eight OK?','Съжалявам, в седем е пълно. В осем удобно ли е?'],
+  ['Жената','Yes, eight is fine.','Да, в осем е добре.'],
+  ['Ресторантът','Great. What\'s your name, please?','Чудесно. Името ви, моля?'],
+  ['Жената','Petrova. P-E-T-R-O-V-A.','Петрова. П-Е-Т-Р-О-В-А.']],
+  q:[['What time is the table for?','Eight o\'clock','Seven o\'clock','Four o\'clock'],['tf','The table is for Friday.',true]]},
+ {id:'waiter',t:'Сервитьорът',e:'🍝',l:[
+  ['Сервитьорът','Are you ready to order?','Готови ли сте да поръчате?'],
+  ['Мъжът','Yes. I\'d like the chicken soup, please.','Да. Искам пилешка супа, моля.'],
+  ['Сервитьорът','I\'m sorry, we don\'t have any soup today.','Съжалявам, днес нямаме супа.'],
+  ['Мъжът','Oh. Then the pasta with vegetables, please.','А. Тогава пастата със зеленчуци, моля.'],
+  ['Сервитьорът','And what would you like to drink?','А какво ще пиете?'],
+  ['Мъжът','Just water, please.','Само вода, моля.']],
+  q:[['What does the man order in the end?','Pasta with vegetables','Chicken soup','Fish and chips'],['tf','He wants a glass of wine.',false]]},
+ {id:'gate',t:'Последно повикване',e:'✈️',l:[
+  ['Високоговорител','Good afternoon.','Добър ден.'],
+  ['Високоговорител','This is the last call for flight BA eight seven oh to Sofia.','Това е последно повикване за полет BA 870 за София.'],
+  ['Високоговорител','Please go to gate twenty-one now.','Моля, отидете веднага на изход двайсет и едно.'],
+  ['Високоговорител','The gate closes in five minutes.','Изходът се затваря след пет минути.']],
+  q:[['Where is the flight going?','To Sofia','To London','To Rome'],['tf','The gate closes in fifteen minutes.',false]]},
+ {id:'weather',t:'Времето по радиото',e:'🌦️',l:[
+  ['Радиото','And now the weather.','А сега – времето.'],
+  ['Радиото','Today it will be cold and cloudy in London, with some rain in the afternoon.','Днес в Лондон ще бъде студено и облачно, с малко дъжд следобед.'],
+  ['Радиото','Don\'t forget your umbrella!','Не забравяйте чадъра си!'],
+  ['Радиото','Tomorrow will be sunny but windy, and the temperature will be twelve degrees.','Утре ще бъде слънчево, но ветровито, а температурата ще е дванайсет градуса.']],
+  q:[['What will the weather be like tomorrow?','Sunny and windy','Rainy and cold','Snowy'],['tf','It will rain this afternoon.',true]]},
+ {id:'pharmacy',t:'В аптеката',e:'💊',l:[
+  ['Фармацевтът','Good morning. How can I help you?','Добро утро. С какво мога да помогна?'],
+  ['Жената','I have a sore throat and a cough.','Боли ме гърлото и кашлям.'],
+  ['Фармацевтът','Do you have a temperature?','Имате ли температура?'],
+  ['Жената','No, I don\'t.','Не, нямам.'],
+  ['Фармацевтът','Take these tablets three times a day, after food. And drink something hot.','Пийте тези таблетки три пъти на ден, след хранене. И пийте нещо топло.'],
+  ['Жената','How much are they?','Колко струват?'],
+  ['Фармацевтът','Six pounds, please.','Шест паунда, моля.']],
+  q:[['How often should she take the tablets?','Three times a day','Twice a day','Once a day'],['tf','She has a temperature.',false]]},
+ {id:'voicemail',t:'Гласово съобщение',e:'📱',l:[
+  ['Кейт','Hi Ivan, it\'s Kate.','Здрасти, Иван, Кейт е.'],
+  ['Кейт','I\'m sorry, but I can\'t meet you at the cinema tonight. My car is broken.','Съжалявам, но не мога да се видим на кино довечера. Колата ми е развалена.'],
+  ['Кейт','Can we go on Saturday instead?','Може ли да отидем в събота вместо това?'],
+  ['Кейт','Call me back. My number is oh seven nine, four five six, two two one.','Обади ми се. Номерът ми е 079 456 221.'],
+  ['Кейт','Bye!','Чао!']],
+  q:[['Why can\'t Kate go to the cinema tonight?','Her car is broken','She is ill','She is at work'],['tf','Kate wants to go on Saturday.',true]]},
+ {id:'bus',t:'В автобуса',e:'🚌',l:[
+  ['Мъжът','Excuse me, does this bus go to the British Museum?','Извинете, този автобус ходи ли до Британския музей?'],
+  ['Шофьорът','No, it doesn\'t. You need the number seventy-three.','Не, не ходи. Трябва ви номер седемдесет и три.'],
+  ['Мъжът','Where can I get it?','Откъде мога да го хвана?'],
+  ['Шофьорът','Across the road, at the next stop.','Отсреща, на следващата спирка.'],
+  ['Мъжът','Thanks! Can I pay on the bus?','Благодаря! Мога ли да платя в автобуса?'],
+  ['Шофьорът','Yes, but only by card. No cash.','Да, но само с карта. Без пари в брой.']],
+  q:[['Which bus does the man need?','Number seventy-three','Number thirty-seven','Number thirteen'],['tf','He can pay with cash on the bus.',false]]},
+ {id:'wake',t:'На рецепцията',e:'🛎️',l:[
+  ['Гостът','Hello. Can I have a wake-up call tomorrow morning, please?','Здравейте. Може ли да ме събудите утре сутрин по телефона?'],
+  ['Рецепцията','Of course. What time?','Разбира се. В колко часа?'],
+  ['Гостът','At half past six, please. I have an early flight.','В шест и половина, моля. Имам ранен полет.'],
+  ['Рецепцията','No problem. Would you like a taxi to the airport too?','Няма проблем. Искате ли и такси до летището?'],
+  ['Гостът','Yes, please. At seven o\'clock.','Да, моля. В седем часа.']],
+  q:[['What time is the wake-up call?','Half past six','Seven o\'clock','Half past seven'],['tf','The guest wants a taxi to the airport.',true]]}
+];
+/* questions for the dialogues in DATA.G (by id) */
+const LS_GQ={
+ meet:[['Where is Elena from?','Bulgaria','Italy','England'],['What is Tom\'s job?','He is a teacher','He is a nurse','He is a doctor'],['tf','Elena lives in Plovdiv.',true]],
+ cafe:[['What does the customer drink?','Tea with milk','Coffee with sugar','Orange juice'],['How much does it cost?','Six euros fifty','Five euros sixty','Sixteen euros'],['tf','The customer pays in cash.',false]],
+ shop:[['What is the customer looking for?','A jacket','A dress','Shoes'],['What is the problem with the first one?','It is too small','It is too big','It is too expensive'],['tf','The customer buys the jacket in the end.',true]],
+ way:[['Where does the person want to go?','The train station','The bank','The post office'],['How far is it?','About five minutes on foot','About fifteen minutes by bus','Very far'],['tf','The station is next to the bank.',false]],
+ phone:[['Where do they want to go?','To the cinema','To a restaurant','To the theatre'],['What time does the film start?','At eight','At half past seven','At seven'],['tf','They will meet at half past seven.',true]],
+ hotel:[['How many nights is the reservation for?','Two nights','One night','Three nights'],['What time is breakfast?','From seven to ten','From six to nine','From eight to eleven'],['tf','The Wi-Fi password is on the key card.',true]],
+ doctor:[['What is the problem?','A terrible headache','A sore leg','A stomach ache'],['How often should the patient take the medicine?','Twice a day','Three times a day','Once a day'],['tf','The patient has had the problem for a week.',false]],
+ restaurant:[['What does the waiter recommend?','The fish','The soup','The chicken'],['What does the customer drink?','White wine','Red wine','Water'],['tf','The customer didn\'t like the meal.',false]],
+ airport:[['Where is the passenger flying to?','London','Sofia','Paris'],['What is the problem with the flight?','A thirty-minute delay','It is cancelled','The gate is closed'],['tf','The passenger has two suitcases.',false]],
+ job:[['Where did the person work before?','In a hotel, as a receptionist','In a bank','In a school'],['Which languages can the person speak?','Bulgarian, English and a little German','Only English','Bulgarian and French'],['tf','They will call the person next week.',true]],
+ flat:[['How many bedrooms does the flat have?','Two','One','Three'],['How much is the rent?','Five hundred euros a month','Five hundred euros a week','Fifty euros a month'],['tf','The flat is far from the metro.',false]],
+ weekend:[['Where did Sara go at the weekend?','To the mountains','To the sea','To London'],['What did they do there?','They walked and had a picnic','They went skiing','They went shopping'],['tf','The weather was cold at night.',true]],
+ supermarket:[['How many apples do they need?','About six','About two','Ten'],['What size of coffee packet should they buy?','A big one','A small one','Two small ones'],['tf','They have some milk at home.',false]],
+ bank:[['What does the customer want to do?','Open a bank account','Change money','Close an account'],['When will the card arrive?','In about a week','Today','In a month'],['tf','Opening the account is free.',true]],
+ complaint:[['What doesn\'t work in the room?','The air conditioning','The shower','The TV'],['What is special about the new room?','It has a view of the sea','It is bigger','It is cheaper'],['tf','The room next door is very quiet.',false]],
+ plans:[['Which countries is the person thinking about?','Italy or Spain','France or Greece','Spain or Portugal'],['When did the friend go to Spain?','Two years ago','Last summer','Never'],['tf','The friend thinks Spain is very expensive.',false]],
+ lost:[['Where was the person when they last had the phone?','In a café on the main square','On the bus','In a shop'],['What does the phone look like?','Black, with a red case','Red, with a black case','White'],['tf','The café staff found the phone.',false]],
+ neighbours:[['What was the problem last night?','Very loud music','A barking dog','A broken door'],['Why was there a party?','It was the son\'s birthday','It was a wedding','It was New Year'],['tf','The neighbour says it won\'t happen again.',true]],
+ exam:[['When is the exam?','Tomorrow','Today','Next week'],['What do they decide to do?','Test each other','Go to the cinema','Go to bed at once'],['tf','"For" is used with a period of time.',true]],
+ birthday:[['When is Mum\'s birthday?','On Saturday','On Sunday','On Friday'],['What present do they choose in the end?','A cooking class','Some flowers','A book'],['tf','The present costs about eighty euros.',true]],
+ taxi:[['Where does the passenger want to go?','To the central station','To the airport','To a hotel'],['How much is the taxi?','Twelve euros','Twenty euros','Fifteen euros'],['tf','There is a lot of traffic today.',false]],
+ sports:[['When are the yoga classes?','On Tuesdays','On Fridays','Every day'],['How much is the gym a month?','Thirty euros','Thirteen euros','Fifty euros'],['tf','The first week is free.',true]]
+};
+
+/* ===== v51: Слушалня – a listening room with tap-to-play lines, follow-along, questions, gap-fill and a sentence builder ===== */
+(function(){
+  const $p=()=>document.getElementById('panel');
+  const X=()=>window.__V25||{};
+  S.ls=S.ls&&typeof S.ls==='object'?S.ls:{done:{},ms:0};S.ls.done=S.ls.done||{};S.ls.ms=S.ls.ms||0;
+  const goT=k=>{S.tab=k;save();renderTabs();renderPanel();try{window.scrollTo({top:0})}catch(e){}};
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const STOP=new Set('the and but with that this they them then than there their what when where which your you are was were have has had for from not can could would will shall should into onto about over very just only also some any all its his her him she he our out off too much many more most here here\'s it\'s don\'t isn\'t aren\'t i\'m'.split(' '));
+
+  /* ---------------- the parts ---------------- */
+  const sents=t=>(String(t).match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[t]).map(x=>x.trim()).filter(Boolean);
+  const unbrace=t=>String(t).replace(/\{([^;}]*)[^}]*\}/g,'$1');
+  let PARTS=null;
+  function build(){
+    if(PARTS)return PARTS;const P=[];
+    LS_SC.forEach(sc=>P.push({g:'sc',t:sc.t,e:sc.e,kind:'Сцена',lines:sc.l.map(([s,en,bg])=>({s,en,bg})),
+      q:sc.q}));
+    const ST=window.__STORIES||{};
+    ['s1','d1','s2','s3','d2','d3','d4','s4'].forEach(k=>{const s=ST[k];if(!s)return;
+      P.push({g:'bg',t:s[1],e:s[0]==='Диалог'?'💬':'📖',kind:s[0],lines:s[3].map(([sp,en,bg])=>({s:sp,en,bg})),q:(s[4]||[]).slice(0,5)})});
+    (DATA.G||[]).forEach(g=>{P.push({g:'dl',t:g.t,e:'🗣️',kind:'Разговор',sub:g.d,
+      lines:g.x.map(([sp,en,bg])=>{const m=String(en).match(/\{([^}]*)\}/);return {s:sp,en:unbrace(en),bg,raw:en,gap:m?m[1].split(';')[0]:null}}),q:LS_GQ[g.id]||[]})});
+    (DATA.K||[]).forEach(k=>{const E=sents(k.x),B=sents(k.b);const pair=E.length===B.length;
+      P.push({g:'my',t:k.t,e:'🔎',kind:'История',sub:k.s,lines:E.map((en,i)=>({s:'',en,bg:pair?B[i]:''})),bgAll:pair?'':k.b,
+        q:(k.q||[]).slice(0,6).map(x=>[x[1],x[2][0],x[2][1],x[2][2]])})});
+    P.forEach((p,i)=>{p.id='p'+String(i+1).padStart(2,'0');p.n=i+1;
+      const who=[];p.lines.forEach(l=>{if(l.s&&!who.includes(l.s))who.push(l.s);l.vi=l.s?who.indexOf(l.s)%2:0});p.dlg=who.length>1});
+    return PARTS=P;
+  }
+  const GROUPS=[['sc','Сцени от всеки ден','Кратки съобщения и разговори: гара, магазин, телефон, ресторант.'],
+    ['bg','Бай Ганьо в Лондон','Историите и диалозите от „Пътят напред".'],
+    ['dl','Разговори','Ежедневни разговори между двама души.'],
+    ['my','Истории със загадка','По-дълги истории – слушайте внимателно подробностите.']];
+
+  /* ---------------- speech: two voices, accent, speed, word timing ---------------- */
+  const isAcc=(v,a)=>new RegExp('^en[-_]'+a+'$','i').test(v.lang);
+  const accs=()=>{const a=TTS.v||[];return {GB:a.some(v=>isAcc(v,'GB')),US:a.some(v=>isAcc(v,'US'))}};
+  const acc=()=>{let a=opt('lsAcc','');const av=accs();if(a&&av[a])return a;
+    const f=(TTS.v||[])[0];if(f&&isAcc(f,'US'))return 'US';return av.GB||!av.US?'GB':'US'};
+  const pool=()=>{const all=TTS.v||[];const a=acc();const p=all.filter(v=>isAcc(v,a));return p.length?p:all};
+  const spd=()=>+opt('lsSpd',1)||1;
+  let msBuf=0;
+  function addMs(d){if(!(d>0))return;d=Math.min(d,30000);S.ls.ms+=d;msBuf+=d;if(msBuf>5000){msBuf=0;save();try{X().checkStickers&&X().checkStickers(false)}catch(e){}}}
+  function toks(t){const out=[];const re=/\S+/g;let m;while((m=re.exec(t)))out.push([m.index,m[0]]);return out}
+  /* speak one line; cb.word(tokenIndex) while it is spoken, cb.end() when it finishes */
+  function speak(text,vi,cb){
+    cb=cb||{};const g=TTS.gen;
+    if(!TTS.ok){setTimeout(()=>{if(g===TTS.gen)cb.end&&cb.end()},300);return}
+    const pv=pool();const two=pv.length>1;const v=pv[vi&&two?1:0];
+    const u=new SpeechSynthesisUtterance(text);
+    if(v){u.voice=v;u.lang=v.lang}else u.lang=acc()==='US'?'en-US':'en-GB';
+    u.rate=0.95*spd();u.pitch=vi&&!two?1.3:1;
+    const T=toks(text);let t0=Date.now(),bd=false,fin=false,timers=[];
+    const clr=()=>{timers.forEach(clearTimeout);timers=[]};
+    const tokAt=ci=>{let k=0;for(let i=0;i<T.length;i++){if(T[i][0]<=ci)k=i;else break}return k};
+    function estimate(){ /* no word events from this voice: move the underline by an estimate */
+      const per=1000/(13.5*u.rate);let at=0;
+      T.forEach(([o,w],i)=>{timers.push(setTimeout(()=>{if(!fin&&!bd&&g===TTS.gen)cb.word&&cb.word(i)},at));at+=w.length*per+140})}
+    u.onstart=()=>{t0=Date.now();timers.push(setTimeout(()=>{if(!bd&&!fin)estimate()},350));if(!bd)cb.word&&cb.word(0)};
+    u.onboundary=e=>{if(e.name&&e.name!=='word')return;if(!bd){bd=true;clr()}if(g===TTS.gen)cb.word&&cb.word(tokAt(e.charIndex||0))};
+    const end=()=>{if(fin)return;fin=true;clr();addMs(Date.now()-t0);if(g!==TTS.gen)return;cb.end&&cb.end()};
+    u.onend=end;u.onerror=end;
+    /* a safety net in case the engine never reports the end */
+    timers.push(setTimeout(()=>{if(!fin&&!speechSynthesis.speaking)end()},Math.max(4000,text.length*260/u.rate)));
+    try{speechSynthesis.resume()}catch(e){}
+    try{speechSynthesis.speak(u)}catch(e){end()}
+  }
+
+  /* ---------------- list of parts ---------------- */
+  const mins=()=>Math.floor((S.ls.ms||0)/60000);
+  const doneN=()=>build().filter(p=>S.ls.done[p.id]).length;
+  function drawList(p){
+    p.append(h('button',{type:'button',class:'backpill',onclick:()=>goT('games')},h('span',{'aria-hidden':'true'},'‹'),'Всички игри'));
+    p.append(...head('Слушалня','Слушайте сцени, истории и разговори. Докоснете ▶ до всяко изречение или пуснете всичко наведнъж. След това отговорете на въпросите и направете упражненията.'));
+    const P=build();
+    p.append(h('div',{class:'lsstat'},h('span',null,'🎧 ',h('b',null,mins()+' мин'),' слушане'),h('span',null,'✓ ',h('b',null,doneN()+' от '+P.length),' части')));
+    const last=S.ls.last&&P.find(x=>x.id===S.ls.last);
+    if(last){const nx=S.ls.done[last.id]?P[last.n]||last:last;
+      p.append(h('button',{type:'button',class:'btn rose huge lsgo',onclick:()=>openPart(nx.id)},'▶ '+(nx===last?'Продължете: ':'Следваща: ')+nx.n+'. '+nx.t))}
+    GROUPS.forEach(([g,t,d])=>{const L=P.filter(x=>x.g===g);if(!L.length)return;
+      p.append(h('div',{class:'lsgrp'},h('h3',null,t),h('p',null,d)),
+        h('div',{class:'stlib'},L.map(x=>{const r=S.ls.done[x.id];
+          return h('button',{type:'button',class:'stcard',onclick:()=>openPart(x.id)},h('span',{class:'si'},x.e),
+            h('span',{class:'st2'},h('b',null,x.n+'. '+x.t),h('small',null,x.kind+' · '+x.lines.length+' изречения'+(x.q.length?' · '+x.q.length+' въпроса':''))),
+            r?h('span',{class:'sck'},'✓ '+r.s+'/'+r.n):h('span',{class:'la'},'›'))})))});
+  }
+  function openPart(id){S.lsView=id;S.ls.last=id;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
+
+  /* ---------------- one part ---------------- */
+  let VIEW=null;   // {touched}
+  function drawPart(p,id){
+    const P=build();const part=P.find(x=>x.id===id);if(!part){S.lsView=null;save();return drawList(p)}
+    VIEW={touched:false};
+    const root=h('div',{class:'storyw lsw'});
+    const cls=()=>{root.classList.toggle('notext',!opt('lsTxt',true));root.classList.toggle('bg',!!opt('lsBg',false));
+      root.classList.toggle('nofol',!opt('lsFol',true));root.classList.toggle('showans',!!opt('lsAns',false))};
+    cls();
+    /* head + part picker */
+    const sel=h('select',{class:'lssel','aria-label':'Изберете част'},P.map(x=>{const o=h('option',{value:x.id},x.n+'. '+x.t);if(x.id===id)o.selected=true;return o}));
+    sel.addEventListener('change',()=>openPart(sel.value));
+    const prev=P[part.n-2],next=P[part.n];
+    root.append(h('div',{class:'lshead'},h('small',null,'Слушалня · част '+part.n+' от '+P.length+' · '+part.kind),h('h3',null,part.e+' '+part.t),part.sub?h('p',null,part.sub):null),
+      h('div',{class:'lspick'},h('button',{type:'button',class:'lsnb','aria-label':'Предишна част',disabled:!prev,onclick:()=>prev&&openPart(prev.id)},'‹'),sel,
+        h('button',{type:'button',class:'lsnb','aria-label':'Следваща част',disabled:!next,onclick:()=>next&&openPart(next.id)},'›')));
+    /* toggles */
+    const tg=(key,def,label,title)=>{const b=h('button',{type:'button',class:'lstg','aria-pressed':String(!!opt(key,def)),title},label);
+      b.addEventListener('click',()=>{const on=!opt(key,def);setOpt(key,on);b.setAttribute('aria-pressed',String(on));cls();if(key==='lsFol'&&!on)clearW()});return b};
+    const av=accs();const accRow=[];
+    if(av.GB||av.US){const mk=(a,l)=>{const b=h('button',{type:'button',class:'lstg acc','aria-pressed':String(acc()===a),disabled:!av[a],title:av[a]?'':'На това устройство няма такъв глас'},l);
+        b.addEventListener('click',()=>{if(!av[a])return;setOpt('lsAcc',a);root.querySelectorAll('.lstg.acc').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));stopAll();
+          speak(a==='US'?'Hello! This is the American voice.':'Hello! This is the British voice.',0,{})});return b};
+      accRow.push(mk('GB','🇬🇧 Британски'),mk('US','🇺🇸 Американски'))}
+    root.append(h('div',{class:'lstgs'},tg('lsTxt',true,'Aa Текст','Покажи или скрий английския текст'),tg('lsBg',false,'🇧🇬 Превод','Покажи превода'),
+      tg('lsFol',true,'〰 Следене','Подчертава думата, която се чува, и превърта екрана'),part.q.length?tg('lsAns',false,'🔑 Отговори','Покажи верните отговори'):null,...accRow));
+    if(!TTS.ok||!(TTS.v||[]).length)root.append(h('p',{class:'lswarn'},'🔇 На това устройство не се намери английски глас. Можете да четете текста и да решавате задачите, а за звук свалете английски глас от настройките на телефона (Синтезиране на говор).'));
+    /* jump links */
+    const secs=[['lstr','Текст']];
+    /* transcript */
+    const lines=part.lines;const LE=[];
+    const tr=h('div',{class:'lstr'+(part.dlg?' dlg':''),id:'lstr'});
+    lines.forEach((l,i)=>{
+      const pb=h('button',{type:'button',class:'lspb','aria-label':'Чуй изречението'},'▶');
+      const en=h('div',{class:'lsen',lang:'en'});toks(l.en).forEach(([o,w],k)=>{if(k)en.append(' ');en.append(h('span',{class:'lw'},w))});
+      const ln=h('div',{class:'lsln'+(part.dlg&&l.vi?' me':'')},pb,h('div',{class:'lsbody'},l.s&&part.dlg?h('span',{class:'lswho'},l.s):null,en,l.bg?h('div',{class:'lsbg'},l.bg):null));
+      pb.addEventListener('click',e=>{e.stopPropagation();if(ST.mode==='one'&&ST.i===i){stopAll();return}playOne(i)});
+      en.addEventListener('click',()=>{if(root.classList.contains('notext'))en.classList.toggle('peek')});
+      LE.push(ln);tr.append(ln)});
+    if(part.bgAll)tr.append(h('div',{class:'lsbg lsbgall'},part.bgAll));
+    root.append(tr);
+    /* player docked at the bottom */
+    const pm=h('button',{type:'button',class:'btn rose lspm'},'▶ Пусни всичко');
+    const sp=h('select',{class:'lsspd','aria-label':'Скорост'},[['0.7','0.7×'],['0.85','0.85×'],['1','1×']].map(([v,t])=>{const o=h('option',{value:v},t);if(+v===spd())o.selected=true;return o}));
+    sp.addEventListener('change',()=>{setOpt('lsSpd',+sp.value)});
+    const dock=h('div',{class:'lsdock'},h('button',{type:'button',class:'lsnb','aria-label':'Предишна част',disabled:!prev,onclick:()=>prev&&openPart(prev.id)},'‹'),pm,h('label',{class:'lsspl'},h('span',null,'Скорост'),sp),
+      h('button',{type:'button',class:'lsnb','aria-label':'Следваща част',disabled:!next,onclick:()=>next&&openPart(next.id)},'›'));
+    root.append(dock);
+    /* playback state */
+    const ST={mode:null,i:-1,resume:0};let curW=null;
+    function clearW(){if(curW){curW.classList.remove('cur');curW=null}}
+    function live(i){LE.forEach((x,k)=>x.classList.toggle('live',k===i))}
+    function word(i,k){if(!opt('lsFol',true))return;const w=LE[i]&&LE[i].querySelectorAll('.lw')[k];if(w===curW)return;clearW();if(w){w.classList.add('cur');curW=w}}
+    function ui(){pm.textContent=ST.mode==='all'?'⏸ Пауза':(ST.resume>0?'▶ Продължи':'▶ Пусни всичко');LE.forEach((x,k)=>x.querySelector('.lspb').classList.toggle('on',ST.mode&&k===ST.i))}
+    function stopAll(){ttsStop();if(ST.mode==='all')ST.resume=Math.max(0,ST.i);ST.mode=null;ST.i=-1;live(-1);clearW();ui()}
+    function scrollTo(i){if(!opt('lsFol',true))return;const r=LE[i].getBoundingClientRect(),vh=innerHeight;if(r.top<vh*0.15||r.bottom>vh*0.72){try{LE[i].scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}}
+    function playOne(i){ttsStop();ST.mode='one';ST.i=i;live(i);ui();
+      setTimeout(()=>speak(lines[i].en,lines[i].vi,{word:k=>word(i,k),end:()=>{ST.mode=null;ST.i=-1;live(-1);clearW();ui()}}),60)}
+    function playAll(from){ttsStop();ST.mode='all';const g0=TTS.gen;
+      const step=i=>{if(g0!==TTS.gen)return;if(i>=lines.length){ST.mode=null;ST.i=-1;ST.resume=0;live(-1);clearW();ui();return}
+        ST.i=i;live(i);ui();scrollTo(i);
+        speak(lines[i].en,lines[i].vi,{word:k=>word(i,k),end:()=>{clearW();setTimeout(()=>{if(g0===TTS.gen)step(i+1)},lines[i+1]&&lines[i+1].s!==lines[i].s?450:300)}})};
+      setTimeout(()=>step(from||0),60)}
+    pm.addEventListener('click',()=>{if(ST.mode==='all'){stopAll();return}const r=ST.resume;ST.resume=0;playAll(r)});
+    root.__stop=stopAll;
+    /* ---------------- questions ---------------- */
+    const touch=()=>{VIEW.touched=true};
+    if(part.q.length){secs.push(['lsq','Въпроси']);
+      const Q=part.q.map(x=>x[0]==='tf'?{q:x[1],tf:x[2]}:{q:x[0],o:shuffle([[x[1],1],[x[2],0],[x[3],0]].filter(z=>z[0]!=null))});
+      const res=new Array(Q.length).fill(null);
+      const sc=h('div',{class:'lsscore'});
+      const box=h('div',{class:'lsex',id:'lsq'},h('h4',null,'❓ Въпроси'),h('p',{class:'lsnote'},'Слушайте текста и отговорете. Докоснете ▶, за да чуете въпроса.'));
+      const fin=()=>{const n=Q.length,ok=res.filter(x=>x===1).length;
+        if(res.every(x=>x!=null)){sc.textContent=`Резултат: ${ok} от ${n} от първия път`;sc.classList.add('done');
+          const old=S.ls.done[part.id];if(!old||ok>=old.s)S.ls.done[part.id]={s:ok,n,d:today()};save();try{X().checkStickers&&X().checkStickers(false)}catch(e){}
+          if(ok===n){try{sfx('fanfare')}catch(e){}}}
+        else sc.textContent=`${res.filter(x=>x!=null).length} от ${n} отговорени`};
+      Q.forEach((q,i)=>{
+        const qb=h('button',{type:'button',class:'lspb','aria-label':'Чуй въпроса'},'▶');
+        qb.addEventListener('click',()=>{stopAll();speak(q.q,0,{})});
+        const opts=q.tf!=null?[['True',q.tf?1:0],['False',q.tf?0:1]]:q.o;
+        const row=h('div',{class:'lsopts'+(q.tf!=null?' tf':'')});
+        opts.forEach(([t,r])=>{const b=h('button',{type:'button',class:'lsopt'+(r?' right':''),lang:'en'},q.tf!=null?(t==='True'?'✓ True':'✗ False'):t);
+          b.addEventListener('click',()=>{if(row.classList.contains('over'))return;touch();
+            if(r){b.classList.add('ok');row.classList.add('over');if(res[i]==null)res[i]=1;try{sfx('ding');buzz(15)}catch(e){}}
+            else{b.classList.add('bad');b.disabled=true;if(res[i]==null)res[i]=0;try{buzz([30,40,30])}catch(e){}}
+            if(r||res[i]===0){if(!r&&row.querySelectorAll('.lsopt:not(.bad)').length===1){row.querySelector('.lsopt.right').classList.add('ok');row.classList.add('over')}}
+            fin()});row.append(b)});
+        box.append(h('div',{class:'lsqi'},h('div',{class:'lsqq'},qb,h('span',{lang:'en'},(i+1)+'. '+q.q)),row))});
+      box.append(sc);fin();root.append(box)}
+    /* ---------------- gap-fill from audio ---------------- */
+    const wordsOf=t=>t.split(/\s+/).map(w=>w.replace(/^[^A-Za-z0-9£]+|[^A-Za-z0-9']+$/g,'')).filter(Boolean);
+    const spread=(arr,n)=>{if(arr.length<=n)return arr;const out=[];for(let k=0;k<n;k++)out.push(arr[Math.floor(k*arr.length/n)]);return out};
+    let gaps=[];
+    if(part.g==='dl'){gaps=spread(lines.map((l,i)=>[l,i]).filter(([l])=>l.gap),5).map(([l,i])=>{const m=l.raw.match(/\{([^}]*)\}/);
+      const pre=unbrace(l.raw.slice(0,m.index)),post=unbrace(l.raw.slice(m.index+m[0].length));return {i,a:l.gap,pre,post}})}
+    else{const cand=lines.map((l,i)=>{const W=wordsOf(l.en);if(W.length<4)return null;
+        const c=W.filter(w=>/^[a-z][a-z']{2,}$/.test(w)&&!STOP.has(w)&&byEn&&byEn[w]);if(!c.length)return null;
+        c.sort((a,b)=>b.length-a.length);return [l,i,c[Math.floor(Math.random()*Math.min(2,c.length))]]}).filter(Boolean);
+      gaps=spread(cand,5).map(([l,i,w])=>{const re=new RegExp('(^|[^A-Za-z\'])('+w.replace(/'/g,"\\'")+')(?![A-Za-z\'])');const m=l.en.match(re);
+        const at=m.index+m[1].length;return {i,a:w,pre:l.en.slice(0,at),post:l.en.slice(at+w.length)}})}
+    if(gaps.length>=2){secs.push(['lsg','Попълни']);
+      const box=h('div',{class:'lsex',id:'lsg'},h('h4',null,'✏️ Попълнете празното място'),h('p',{class:'lsnote'},'Чуйте изречението и напишете липсващата дума – или докоснете дума от списъка.'));
+      const bank=h('div',{class:'lsbank'});let lastIn=null;const ins=[];
+      const rows=gaps.map((g,k)=>{const inp=h('input',{type:'text',class:'lsin',lang:'en',autocomplete:'off',autocapitalize:'off',autocorrect:'off',spellcheck:'false','aria-label':'Празно място '+(k+1)});
+        inp.addEventListener('focus',()=>{lastIn=inp});inp.addEventListener('input',()=>{inp.classList.remove('ok','bad');touch()});
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();chk()}});ins.push(inp);
+        const pb=h('button',{type:'button',class:'lspb','aria-label':'Чуй изречението'},'▶');pb.addEventListener('click',()=>{stopAll();speak(lines[g.i].en,lines[g.i].vi,{})});
+        return h('div',{class:'lsgap'},pb,h('div',{class:'lsgs',lang:'en'},g.pre,inp,g.post,h('div',{class:'lsans'},'Отговор: ',h('b',null,g.a))))});
+      shuffle(gaps.map(g=>g.a)).forEach(w=>{const c=h('button',{type:'button',class:'chip lschip',lang:'en'},w);
+        c.addEventListener('click',()=>{const t=lastIn&&!lastIn.value?lastIn:ins.find(x=>!x.value);if(!t)return;t.value=w;t.classList.remove('ok','bad');c.classList.add('used');touch();
+          const nx=ins.find(x=>!x.value);if(nx){lastIn=nx;try{nx.focus({preventScroll:true})}catch(e){}}});bank.append(c)});
+      const sc=h('span',{class:'lsscore'});
+      const nm=s=>String(s).toLowerCase().replace(/[’`]/g,"'").replace(/[^a-z0-9']/g,'');
+      function chk(){let ok=0;gaps.forEach((g,k)=>{const v=ins[k].value.trim(),good=nm(v)===nm(g.a);ins[k].classList.toggle('ok',good);ins[k].classList.toggle('bad',!!v&&!good);if(good)ok++});
+        sc.textContent=ok+' от '+gaps.length+' верни';if(ok===gaps.length){try{sfx('ding')}catch(e){}}}
+      box.append(bank,...rows,h('div',{class:'lsrow'},h('button',{type:'button',class:'btn rose',onclick:chk},'Провери'),
+        h('button',{type:'button',class:'btn alt',onclick:()=>{gaps.forEach((g,k)=>{ins[k].value=g.a;ins[k].className='lsin ok'});sc.textContent=''}},'Покажи'),
+        h('button',{type:'button',class:'btn alt',onclick:()=>{ins.forEach(x=>{x.value='';x.className='lsin'});bank.querySelectorAll('.lschip').forEach(c=>c.classList.remove('used'));sc.textContent=''}},'Отначало'),sc));
+      root.append(box)}
+    /* ---------------- sentence builder by ear ---------------- */
+    const used=new Set(gaps.map(g=>g.i));
+    let bc=lines.map((l,i)=>[l,i]).filter(([l])=>{const n=wordsOf(l.en).length;return n>=4&&n<=9});
+    const pref=bc.filter(([,i])=>!used.has(i));if(pref.length>=3)bc=pref;
+    const BI=spread(bc,5);
+    if(BI.length>=2){secs.push(['lsb','Подреди']);
+      const allW=[...new Set(lines.flatMap(l=>wordsOf(l.en)).filter(w=>/^[A-Za-z']{3,}$/.test(w)))];
+      const box=h('div',{class:'lsex',id:'lsb'},h('h4',null,'🧩 Подредете чутото'),h('p',{class:'lsnote'},'Чуйте изречението и подредете думите. Две от думите са излишни.'));
+      const area=h('div',{class:'lsbld'});box.append(area);root.append(box);
+      let st={k:0,ok:0,miss:[]};
+      function one(){
+        if(st.k>=BI.length){area.replaceChildren(h('div',{class:'lsbdone'},h('b',null,st.ok+' от '+BI.length+' от първия път'),
+          h('button',{type:'button',class:'btn alt',onclick:()=>{st={k:0,ok:0,miss:[]};one()}},'Отначало')));return}
+        const [l,i]=BI[st.k];const want=wordsOf(l.en);const lw=new Set(want.map(w=>w.toLowerCase()));
+        const ex=shuffle(allW.filter(w=>!lw.has(w.toLowerCase()))).slice(0,2);
+        let order;let tries=0;do{order=shuffle([...want,...ex])}while(tries++<6&&order.slice(0,want.length).join(' ')===want.join(' '));
+        const placed=[];let tried=false,over=false;
+        const ans=h('div',{class:'lsbans','aria-live':'polite'});const bank=h('div',{class:'lsbbank'});
+        const tiles=order.map((w,k)=>{const b=h('button',{type:'button',class:'lstile',lang:'en'},w);b.addEventListener('click',()=>{if(over)return;touch();
+            const at=placed.indexOf(k);if(at>=0)placed.splice(at,1);else placed.push(k);draw();if(placed.length===want.length)check(true)});return b});
+        bank.append(...tiles);
+        function draw(){ans.replaceChildren(...placed.map(k=>tiles[k]));tiles.forEach((t,k)=>{if(!placed.includes(k))bank.append(t)});ans.classList.remove('bad')}
+        const got=()=>placed.map(k=>order[k].toLowerCase()).join(' ');
+        const res=h('div',{class:'lsbres',hidden:true});
+        function done(ok,shown){over=true;if(!tried){if(ok&&!shown)st.ok++;else st.miss.push(st.k)}tried=true;
+          if(shown){placed.length=0;const u=new Set();want.forEach(w=>{const k=order.findIndex((x,j)=>!u.has(j)&&x===w);u.add(k);placed.push(k)});draw()}
+          ans.classList.add(ok&&!shown?'ok':'bad');bank.hidden=true;res.hidden=false;
+          res.replaceChildren(h('b',{class:ok&&!shown?'okc':'badc'},ok&&!shown?'✓ Вярно!':'Отговорът:'),h('div',{lang:'en',class:'lsbs'},l.en),l.bg?h('div',{class:'lsbg2'},l.bg):null);
+          row.replaceChildren(h('button',{type:'button',class:'btn rose',onclick:()=>{st.k++;one()}},st.k+1>=BI.length?'Резултат ›':'Следващо ›'));
+          if(ok&&!shown){try{sfx('ding')}catch(e){}}}
+        function check(auto){if(over)return;const ok=got()===want.join(' ').toLowerCase();if(ok){done(true,false);return}
+          if(auto&&placed.length<want.length)return;ans.classList.add('bad');if(!tried){tried=true;st.miss.push(st.k)}try{buzz([30,40,30])}catch(e){}}
+        const play=h('button',{type:'button',class:'btn rose lsbplay'},'▶ Чуй изречението');play.addEventListener('click',()=>{stopAll();speak(l.en,l.vi,{})});
+        const row=h('div',{class:'lsrow'},h('button',{type:'button',class:'btn rose',onclick:()=>check(false)},'Провери'),
+          h('button',{type:'button',class:'btn alt',onclick:()=>{if(!over){placed.length=0;draw()}}},'Изчисти'),
+          h('button',{type:'button',class:'btn alt',onclick:()=>done(false,true)},'Покажи'));
+        area.replaceChildren(h('div',{class:'lsbtop'},h('span',null,(st.k+1)+' / '+BI.length),h('span',null,st.ok+' верни от първия път')),play,
+          h('div',{class:'lsans'},'Отговор: ',h('span',{lang:'en'},l.en)),ans,bank,row,res);
+      }
+      one()}
+    /* jump links */
+    if(secs.length>1)root.insertBefore(h('nav',{class:'lsjump'},secs.map(([id,t])=>h('a',{href:'#'+id,onclick:e=>{e.preventDefault();const t2=root.querySelector('#'+id);if(t2)try{t2.scrollIntoView({behavior:'smooth',block:'start'})}catch(_){}}},t))),tr);
+    root.append(h('div',{class:'lsend'},
+      prev?h('button',{type:'button',class:'btn alt',onclick:()=>openPart(prev.id)},'‹ Предишна'):h('span'),
+      h('button',{type:'button',class:'btn alt',onclick:()=>{stopAll();S.lsView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}},'Всички части'),
+      next?h('button',{type:'button',class:'btn alt',onclick:()=>openPart(next.id)},'Следваща ›'):h('span')));
+    p.append(root);
+  }
+
+  /* ---------------- wiring into the app ---------------- */
+  GNAME.slush='Слушалня';TABINFO.slush='Сцени, истории и разговори за слушане – с въпроси и упражнения.';
+  const _rp=renderPanel;
+  renderPanel=function(){
+    if(S.tab==='slush'){
+      ttsStop();const p=$p();p.replaceChildren();document.body.classList.remove('lsdocked');
+      try{if(S.lsView){drawPart(p,S.lsView);document.body.classList.add('lsdocked')}else drawList(p)}catch(e){console.error(e);S.lsView=null;p.replaceChildren();drawList(p)}
+      try{window.dockLater&&window.dockLater()}catch(e){}return}
+    document.body.classList.remove('lsdocked');
+    _rp.apply(this,arguments);
+    if(S.tab==='games'){try{const hub=$p().querySelector('.ghub');if(hub&&!hub.querySelector('.lscard')){
+      const c=h('button',{type:'button',class:'gmcard lscard',onclick:()=>{S.lsView=null;goT('slush')}},h('span',{class:'gi','aria-hidden':'true'},'🎧'),
+        h('span',{class:'gt'},h('b',null,'Слушалня'),h('span',null,TABINFO.slush),doneN()?h('span',{class:'tn ok'},'✓ '+doneN()+' части · '+mins()+' мин'):null));
+      c.style.setProperty('--gc','var(--tab-blue-soft)');
+      const st=[...hub.children].find(x=>/Истории/.test(x.textContent));if(st)st.after(c);else hub.prepend(c)}}catch(e){}}
+  };
+  /* the Игри button in the bottom bar stays lit */
+  const _rt=renderTabs;
+  renderTabs=function(){_rt.apply(this,arguments);try{if(S.tab==='slush'){const n=document.querySelector('.bnav');if(n)n.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.getAttribute('aria-label')==='Игри'?'page':'false'))}}catch(e){}};
+  /* ✕ inside a part: one step back to the list; it only asks when an exercise was started */
+  document.addEventListener('click',e=>{
+    if(S.tab!=='slush'||!S.lsView)return;
+    if(e.target.closest&&e.target.closest('.qxb')&&!(VIEW&&VIEW.touched)){e.stopPropagation();e.preventDefault();ttsStop();S.lsView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(_){}return}
+    if(e.target.closest&&e.target.closest('.qxov .btn.quit')){ttsStop();S.lsView=null;save()}
+  },true);
+  /* ---------------- Аз: minutes listened ---------------- */
+  const _gp=gProgPlus;
+  gProgPlus=function(p){_gp.apply(this,arguments);try{
+    const m=mins(),n=doneN(),N=build().length;const goal=m<10?10:m<60?60:Math.ceil((m+1)/60)*60;
+    const s=h('div',{class:'sect lsme'},h('h3',null,'🎧 Слушане'),
+      h('div',{class:'lsstat'},h('span',null,h('b',null,m+' мин'),' слушане'),h('span',null,h('b',null,n+' от '+N),' части с отговорени въпроси')),
+      h('div',{class:'lsbar'},h('i',{style:'width:'+Math.min(100,Math.round(100*(S.ls.ms/60000)/goal))+'%'})),
+      h('p',{class:'lsnote'},m<10?'До стикера „Слушател": още '+(10-m)+' мин.':m<60?'До стикера „Добро ухо": още '+(60-m)+' мин.':'Следваща цел: '+goal+' мин.'),
+      h('button',{type:'button',class:'btn alt',onclick:()=>{S.lsView=null;goT('slush')}},'🎧 Към Слушалня'));
+    const r=p.querySelector('.rsect')||p.querySelector('#setbox');if(r&&r.parentNode)r.parentNode.insertBefore(s,r);else p.append(s)}catch(e){}};
+  /* ---------------- stickers ---------------- */
+  try{const K=X().STK;if(K){
+    if(!K.some(z=>z[0]==='ears'))K.push(['ears','🎧','Слушател','10 минути в Слушалня',()=>(S.ls&&S.ls.ms||0)>=600000]);
+    if(!K.some(z=>z[0]==='ears2'))K.push(['ears2','🎶','Добро ухо','60 минути в Слушалня',()=>(S.ls&&S.ls.ms||0)>=3600000]);
+    X().checkStickers&&X().checkStickers(true)}}catch(e){}
+  try{if(S.tab==='slush'||S.tab==='games')renderPanel()}catch(e){}
+})();
 </script>
 <script>
 /* offline: register the service worker that caches the whole app */
