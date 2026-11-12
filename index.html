@@ -635,6 +635,7 @@ button.stat.sfx.off{opacity:.6}
 .mrow .me .pgc{font-size:16px;white-space:nowrap;letter-spacing:-1px}
 </style>
 
+<script src="ree/ree.js"></script>
 <script>addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__bip=e;document.dispatchEvent(new Event('bipready'))});</script>
 <script>
 /* ===== v10: the First 100 — the words every beginner needs, taught before all others ===== */
@@ -6527,12 +6528,13 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     if(t==='Y'){const L=STORIES[a];return {code,icon:L[0]==='Диалог'?'💬':'📖',title:L[1],sub:L[0]+' и въпроси към него',kind:'story',sid:a,unit:L[2],items:L[4].map((x,i)=>({k:'sq',q:x[0],en:x[1],wr:[x[2],x[3]],bg:'',key:'§Y'+a+i}))}}
     if(t==='L'){const [g,ix]=a.split('-');const P=window.__lsParts?window.__lsParts().filter(x=>x.g===g):[];const part=P[+ix];const u=LSU.findIndex(x=>x.includes(a));
       if(!part||u<0)return {code,kind:'listen',items:[]};return {code,icon:part.e,title:part.t,sub:'Слушалня · '+part.kind+' · нужни са 90%',kind:'listen',unit:8+u,part:part.id,items:null}}
+    if(t==='E'){return window.__reLesson?window.__reLesson(code):{code,kind:'listen',items:[]}}
     if(t==='R'){return {code,icon:'🎓',title:'Голям преговор',sub:'Всичко от „Първи стъпки" – последната стъпка!',kind:'rev',items:null}}
   }
   /* Слушалня inside „Пътят напред": after every unit, a listening unit; each recording needs 90% to unlock the next lesson */
   const LSU=[['sc-7','dl-0','dl-11','dl-12','dl-4','bg-0'],['sc-0','sc-4','dl-8','dl-20','bg-1'],['sc-8','dl-21','dl-18','dl-9','bg-2'],['sc-1','dl-3','dl-13','dl-10','bg-3'],
     ['dl-2','dl-19','dl-16','bg-4'],['sc-5','dl-15','dl-6','bg-5'],['sc-3','sc-2','dl-1','dl-7','bg-6'],['sc-9','sc-6','dl-5','dl-14','dl-17','bg-7']];
-  const ORDER2X=()=>{const o=[];for(let u=0;u<8;u++){o.push(...ORDER2.slice(u*4,u*4+4));if(window.__lsParts)o.push(...LSU[u].map(c=>'L:'+c))}return o};
+  const ORDER2X=()=>{const o=[];for(let u=0;u<8;u++){o.push(...ORDER2.slice(u*4,u*4+4));if(window.__lsParts)o.push(...LSU[u].map(c=>'L:'+c))}if(window.__reCodes)o.push(...window.__reCodes());return o};
   const LS=n=>(n===2?ORDER2X():ORDER).map(lesson).filter(L=>L.items==null||L.items.length);
   const pst=n=>{const k=n===2?'path2':'path';if(!S[k]||typeof S[k]!=='object')S[k]={done:{}};if(!S[k].done)S[k].done={};return S[k]};
   const fin=n=>{const d=pst(n).done;return LS(n).every(L=>d[L.code])};
@@ -6573,9 +6575,9 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
         h('span',{class:'pup'},full?'✓':`${k}/${Ls.length}`)));
       Ls.forEach((L,i)=>{
         const st=(pv===n&&nx&&nx.code===L.code)?'cur':d[L.code]?'done':n<pv?'opt':'lock';const going=cur&&cur.code===L.code&&!cur.paused;
-        if(n===2&&L.unit!=null&&(i===0||Ls[i-1].unit!==L.unit)){const U=UNITS[L.unit]||['🎧','Слушай и разбирай: '+UNITS[L.unit-8][1]];const inU=Ls.filter(x=>x.unit===L.unit);const du=inU.filter(x=>d[x.code]).length;
+        if(n===2&&L.unit!=null&&(i===0||Ls[i-1].unit!==L.unit)){const U=L.unit>=16&&window.__reHead?window.__reHead(L.unit):UNITS[L.unit]||['🎧','Слушай и разбирай: '+UNITS[L.unit-8][1]];const inU=Ls.filter(x=>x.unit===L.unit);const du=inU.filter(x=>d[x.code]).length;
           list.append(h('li',{class:'punit'+(du===inU.length?' ok':inU.some(x=>pv===2&&nx&&x.code===nx.code)?' now':'')},h('span',{class:'pui'},U[0]),
-            h('div',{class:'put'},h('small',null,L.unit>=8?'Слушалня · след част '+(L.unit-7):'Част '+(L.unit+1)),h('b',null,U[1])),h('span',{class:'pup'},du===inU.length?'✓':`${du}/${inU.length}`)))}
+            h('div',{class:'put'},h('small',null,L.unit>=16&&window.__reSmall?window.__reSmall(L.unit):L.unit>=8?'Слушалня · след част '+(L.unit-7):'Част '+(L.unit+1)),h('b',null,U[1])),h('span',{class:'pup'},du===inU.length?'✓':`${du}/${inU.length}`)))}
         const resume=cur&&cur.code===L.code;
         const li=h('li',{class:'pn '+st+(z++%2?' r':'')},
           h('button',{type:'button',class:'pnb','aria-label':L.title,onclick:()=>{if(st==='lock'){try{toast(n===2&&pv===1?'🔒 Първо завършете „Първи стъпки"':'🔒 Първо завършете предишния урок')}catch(e){}return}
@@ -6747,13 +6749,13 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       }
       area.replaceChildren(h('div',{class:'done-card'},h('div',{class:'stars'},[0,1,2].map(i=>h('span',{class:'star'+(i<stars?'':' off')},'⭐'))),
         h('div',{class:'acc'},h('div',{class:'big'},pct+'%'),h('span',{class:'lbl2'},'от първия опит')),
-        h('p',null,L.kind==='listen'?'Браво! Чухте и разбрахте записа. Можете да го чуете пак в Игри → Слушалня.':L.kind==='snd'?'Урокът е завършен!':L.kind==='tr'?'Браво! Вече можете да правите въпроси и отрицания.':L.kind==='gram'?'Браво! Правилото вече е ваше.':L.kind==='story'?(STORIES[L.sid][0]==='Диалог'?'Диалогът е минат! Можете да го чуете пак в Игри → Истории и диалози.':'Историята е прочетена! Можете да я чуете пак в Игри → Истории и диалози.'):`Урокът е завършен – знаете всички ${L.items.length} ${L.kind==='phr'?'изречения':'думи'} от него!`),
+        h('p',null,L.real?'Браво! Урокът е минат – следва следващата стъпка от главата.':L.kind==='listen'?'Браво! Чухте и разбрахте записа. Можете да го чуете пак в Игри → Слушалня.':L.kind==='snd'?'Урокът е завършен!':L.kind==='tr'?'Браво! Вече можете да правите въпроси и отрицания.':L.kind==='gram'?'Браво! Правилото вече е ваше.':L.kind==='story'?(STORIES[L.sid][0]==='Диалог'?'Диалогът е минат! Можете да го чуете пак в Игри → Истории и диалози.':'Историята е прочетена! Можете да я чуете пак в Игри → Истории и диалози.'):`Урокът е завършен – знаете всички ${L.items.length} ${L.kind==='phr'?'изречения':'думи'} от него!`),
         (!inP2&&fin(1))?h('div',{class:'pthdone'},'🎓 Завършихте „Първи стъпки"! Следва „Пътят напред" – пътуването на Бай Ганьо до Лондон.'):(inP2&&fin(2))?h('div',{class:'pthdone'},'🏁 Завършихте „Пътят напред"! Оттук нататък бутонът „Започни" в Днес ви дава обичайния рунд от 30 задачи.'):null,
         h('button',{class:'btn rose huge',type:'button',onclick:()=>{renderPanel();try{window.scrollTo({top:0})}catch(e){}}},'Продължи по пътеката →')));
       if(!inP2&&fin(1)&&!S.pathFin){S.pathFin=today();save();try{X.checkStickers(false)}catch(e){}}
       if(inP2&&fin(2)&&!S.path2Fin){S.path2Fin=today();save();try{X.checkStickers(false)}catch(e){}}
     }
-    function route(){if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
+    function route(){if(L.real&&window.__reRun){window.__reRun(area,st,L,finish);return}if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
     route();
   }
   /* ---------- story / dialogue reader (used in the path and in the library) ---------- */
@@ -7191,7 +7193,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
   const $p=()=>document.getElementById('panel');
   const goT=k=>{S.tab=k;save();renderTabs();renderPanel();try{window.scrollTo({top:0})}catch(e){}};
   /* the path tab carries the name of the current path */
-  const nameFix=()=>{try{const t=TABS.find(x=>x[0]==='path');if(t&&window.__PV&&window.__PV()===2){t[1]='Пътят напред';TABINFO.path='Пътуването на Бай Ганьо до Лондон: 8 части с думи, граматика, истории и диалози.'}}catch(e){}};
+  const nameFix=()=>{try{const t=TABS.find(x=>x[0]==='path');if(t&&window.__PV&&window.__PV()===2){t[1]='Пътят напред';TABINFO.path='Пътуването на Бай Ганьо до Лондон: 8 части с думи, граматика, истории и диалози, а после 24 истински разговора от BBC.'}}catch(e){}};
   nameFix();const _rt=renderTabs;renderTabs=function(){nameFix();return _rt.apply(this,arguments)};
   /* ---- Игри → Истории и диалози ---- */
   const LIST=['s1','d1','s2','s3','d2','d3','d4','s4'];
