@@ -4,9 +4,9 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14201A" media="(prefers-color-scheme: dark)">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="fonts.css">
 <style>
 /* Layout: a study desk — compact header, a scrollable row of game tabs, one work surface where word tiles sit like keys */
 :root{
@@ -8258,5 +8258,10 @@ const LS_GQ={
     upd();
   };
 })();
+</script>
+<script>/* PWA: offline + автоматично обновяване */
+if('serviceWorker' in navigator){(function(){var had=!!navigator.serviceWorker.controller,done=false;
+navigator.serviceWorker.addEventListener('controllerchange',function(){if(had&&!done){done=true;location.reload()}});
+navigator.serviceWorker.register('sw.js').then(function(r){r.update();document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')r.update()})}).catch(function(){});})()}
 </script>
 </body></html>
