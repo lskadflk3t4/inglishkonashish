@@ -6730,7 +6730,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       area.replaceChildren(h('div',{class:'lesbar'},h('span',null,L.icon+' '+L.title),h('span',null,'Част '+(L.unit+1))),v,h('div',{class:'mnav'},go));
     }
     function finish(){
-      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||pct>=90,stars=pct>=100?3:pct>=95?2:1;
+      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||pct>=90&&!(L.kind==='listen'&&!st.first),stars=pct>=100?3:pct>=95?2:1;
       const inP2=ORDER2.includes(L.code)||L.kind==='listen';
       /* Живи картини: in „Пътят напред" a passed lesson ends with 10 correct answers in pictures */
       if(inP2&&pass&&!st.picOk&&L.kind!=='listen'&&window.__scnGate){try{const ui=L.unit|0,pos=ORDER2.indexOf(L.code)%4;
@@ -6756,7 +6756,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       if(!inP2&&fin(1)&&!S.pathFin){S.pathFin=today();save();try{X.checkStickers(false)}catch(e){}}
       if(inP2&&fin(2)&&!S.path2Fin){S.path2Fin=today();save();try{X.checkStickers(false)}catch(e){}}
     }
-    function route(){if(L.real&&window.__reRun){window.__reRun(area,st,L,finish);return}if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
+    function route(){if(L.real&&window.__reRun){window.__reRun(area,st,L,finish);return}if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(L.kind==='listen'){/* the listening part of the app is still loading: wait for it, never fall through to an empty lesson */area.replaceChildren(h('p',{class:'empty'},'⏳ Зареждане…'));let n=0;const w=()=>{if(!area.isConnected)return;const L2=lesson(st.code);if(window.__lsRun&&L2&&(L2.part||L2.real)){renderPanel();return}if(++n<60)setTimeout(w,100)};setTimeout(w,100);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
     route();
   }
   /* ---------- story / dialogue reader (used in the path and in the library) ---------- */
@@ -8050,7 +8050,7 @@ const LS_GQ={
         box.append(h('div',{class:'lsqi'},h('div',{class:'lsqq'},qb,h('span',{lang:'en'},(i+1)+'. '+q.q)),row))});
       box.append(sc);fin();root.append(box)}
     /* ---------------- gap-fill from audio ---------------- */
-    const wordsOf=t=>t.split(/\s+/).map(w=>w.replace(/^[^A-Za-z0-9£]+|[^A-Za-z0-9']+$/g,'')).filter(Boolean);
+    const wordsOf=t=>t.split(/\s+/).map(w=>w.replace(/^[^\p{L}\p{N}£]+|[^\p{L}\p{N}']+$/gu,'')).filter(Boolean);
     const spread=(arr,n)=>{if(arr.length<=n)return arr;const out=[];for(let k=0;k<n;k++)out.push(arr[Math.floor(k*arr.length/n)]);return out};
     let gaps=[];
     if(part.g==='dl'){gaps=spread(lines.map((l,i)=>[l,i]).filter(([l])=>l.gap),5).map(([l,i])=>{const m=l.raw.match(/\{([^}]*)\}/);
@@ -8086,7 +8086,7 @@ const LS_GQ={
     const pref=bc.filter(([,i])=>!used.has(i));if(pref.length>=3)bc=pref;
     const BI=spread(bc,5);
     if(BI.length>=2){secs.push(['lsb','Подреди']);
-      const allW=[...new Set(lines.flatMap(l=>wordsOf(l.en)).filter(w=>/^[A-Za-z']{3,}$/.test(w)))];
+      const allW=[...new Set(lines.flatMap(l=>wordsOf(l.en)).filter(w=>/^[\p{L}']{3,}$/u.test(w)))];
       const box=h('div',{class:'lsex',id:'lsb'},h('h4',null,'🧩 Подредете чутото'),h('p',{class:'lsnote'},'Чуйте изречението и подредете думите. Две от думите са излишни.'));
       const area=h('div',{class:'lsbld'});box.append(area);root.append(box);
       let st={k:0,ok:0,miss:[]};try{window.__lsHook&&window.__lsHook('reg','b')}catch(e){}
