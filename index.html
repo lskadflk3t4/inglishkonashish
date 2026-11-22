@@ -6648,6 +6648,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     /* ---- practice: each item twice, a wrong task comes back a little later ---- */
     function prac(){
       if(st.cur&&st.cur[3])st.cur=null;
+      if(!Array.isArray(st.Q)){buildQ();save()}
       if(!st.cur){if(!st.Q.length)return finish();st.cur=st.Q.shift();save()}
       const [key,t]=st.cur;const it=findItem(key)||L.items.find(x=>x.key===key);if(!it){st.cur=null;save();return prac()}
       window.__lt={t,it};
