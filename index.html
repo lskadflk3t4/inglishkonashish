@@ -8260,6 +8260,68 @@ const LS_GQ={
   };
 })();
 </script>
+<script>
+/* ===== Слушалня: the 24 real recordings, free access (no locks, no 90% rule, path progress untouched) ===== */
+(function(){
+  const D=window.__REE;if(!D||!window.__reRun)return;
+  const $p=()=>document.getElementById('panel');
+  const ORDER=D.order,EP=D.eps;
+  const STEPS=[['🎧','Слушай и разбери'],['✍️','Попълни празните места'],['❓','Отговори на въпросите']];
+  const R=()=>{if(!S.reFree||typeof S.reFree!=='object')S.reFree={};return S.reFree};
+  const nDone=id=>{const r=R()[id]||{};return [1,2,3].filter(n=>r[n]!=null).length};
+  const st=document.createElement('style');
+  st.textContent='.refree{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}.refree .lstg{flex:1 1 30%;min-height:44px}'+
+    '.refree .lstg[aria-pressed="true"]{background:var(--rose);color:#fff;border-color:var(--rose)}'+
+    '.refin{margin:18px 0 8px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}.refin .big{font-size:40px;font-weight:800}';
+  document.head.append(st);
+  function open(id,step){S.reView={id,step:step||1};S.lsView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
+  function close(){S.reView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
+  function group(){
+    return [h('div',{class:'lsgrp refgrp'},h('h3',null,'🎙️ Истински разговори'),h('p',null,'24 истински записа с живи гласове – свободен достъп. Всеки има 3 упражнения: слушане с думите, празни места и въпроси.')),
+      h('div',{class:'stlib'},ORDER.map((id,i)=>{const e=EP[id];const k=nDone(id);
+        return h('button',{type:'button',class:'stcard',onclick:()=>open(id,1)},h('span',{class:'si'},e.icon),
+          h('span',{class:'st2'},h('b',null,(i+1)+'. '+e.bg),h('small',{lang:'en'},'„'+e.t+'“ · '+e.ser)),
+          k?h('span',{class:'sck'},'✓ '+k+'/3'):h('span',{class:'la'},'›'))}))];
+  }
+  function view(p){
+    const v=S.reView;const e=EP[v.id];if(!e){S.reView=null;return false}
+    const step=[1,2,3].includes(v.step)?v.step:1;
+    p.append(h('button',{type:'button',class:'backpill',onclick:close},h('span',{'aria-hidden':'true'},'‹'),'Слушалня'));
+    const r=R()[v.id]||{};
+    p.append(h('div',{class:'refree',role:'tablist'},STEPS.map(([ic,t],k)=>h('button',{type:'button',class:'lstg','aria-pressed':String(k+1===step),
+      onclick:()=>open(v.id,k+1)},ic+' '+t+(r[k+1]!=null?' ✓':'')))));
+    const area=h('div');p.append(area);
+    const L={code:'free:'+v.id+'-'+step,icon:STEPS[step-1][0],title:STEPS[step-1][1],kind:'listen',real:1,free:1,ep:v.id,step,items:null};
+    const run={first:0,firstOk:0};
+    window.__reRun(area,run,L,()=>{
+      const pct=run.first?Math.round(100*run.firstOk/run.first):0;
+      const rr=R();rr[v.id]=rr[v.id]||{};rr[v.id][step]=Math.max(rr[v.id][step]||0,pct);save();
+      try{sfx&&sfx(pct>=90?'fanfare':'ok')}catch(er){}
+      const i=ORDER.indexOf(v.id),nx=ORDER[i+1];
+      area.replaceChildren(h('div',{class:'refin'},h('div',{class:'big'},pct+'%'),h('p',null,`${run.firstOk} от ${run.first} верни от първия път.`),
+        step<3?h('button',{type:'button',class:'btn rose huge',onclick:()=>open(v.id,step+1)},'Следващо: '+STEPS[step][0]+' '+STEPS[step][1]+' →'):
+          nx?h('button',{type:'button',class:'btn rose huge',onclick:()=>open(nx,1)},'Следващ запис: '+EP[nx].icon+' '+EP[nx].bg+' →'):null,
+        h('button',{type:'button',class:'btn alt',onclick:()=>open(v.id,step)},'↻ Отново'),
+        h('button',{type:'button',class:'btn alt',onclick:close},'‹ Към Слушалня')));
+      try{window.scrollTo({top:0})}catch(er){}
+    });
+    return true;
+  }
+  const _rp=renderPanel;
+  renderPanel=function(){
+    if(S.tab==='slush'&&S.reView){
+      try{ttsStop()}catch(e){}const p=$p();p.replaceChildren();document.body.classList.remove('lsdocked');
+      try{if(view(p))return}catch(e){console.error(e);S.reView=null}
+      p.replaceChildren();
+    }
+    if(S.tab!=='slush')S.reView=null;
+    _rp.apply(this,arguments);
+    if(S.tab==='slush'&&!S.lsView){try{const p=$p();if(!p.querySelector('.refgrp')){const g=group();const f=p.querySelector('.lsgrp');
+      if(f)f.before(...g);else p.append(...g)}}catch(e){}}
+  };
+  try{if(S.tab==='slush')renderPanel()}catch(e){}
+})();
+</script>
 <script>/* PWA: offline + автоматично обновяване */
 if('serviceWorker' in navigator){(function(){var had=!!navigator.serviceWorker.controller,done=false;
 navigator.serviceWorker.addEventListener('controllerchange',function(){if(had&&!done){done=true;location.reload()}});

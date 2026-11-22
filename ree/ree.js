@@ -87,8 +87,8 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
       const p=pct(),left=need.filter(k=>!(k in got)).length;
       info.textContent=(p==null?'':'Резултат: '+p+'% · ')+(need.length-left)+' от '+need.length;
       if(need.length&&!left){const ok=need.filter(k=>got[k]).length;
-        foot.replaceChildren(h('p',null,`Готово: ${ok} от ${need.length} верни от първия път (${Math.round(100*ok/need.length)}%). За да продължите, трябват поне 90%.`),
-          h('button',{type:'button',class:'btn rose huge',onclick:()=>{stop(true);st.first=need.length;st.firstOk=ok;try{save()}catch(e){}finish()}},'Завърши урока →'))}
+        foot.replaceChildren(h('p',null,`Готово: ${ok} от ${need.length} верни от първия път (${Math.round(100*ok/need.length)}%).`+(L.free?'':' За да продължите, трябват поне 90%.')),
+          h('button',{type:'button',class:'btn rose huge',onclick:()=>{stop(true);st.first=need.length;st.firstOk=ok;try{save()}catch(e){}finish()}},L.free?'Готово →':'Завърши урока →'))}
       else foot.replaceChildren(h('p',null,step===1?'Слушайте записа, после изберете значението на всяка дума. Брои се първият опит.':
         step===2?'Докоснете празно място, чуйте изречението и изберете думата. Брои се първият опит.':'Слушайте и отговорете на всички въпроси. Брои се първият опит.'))}
     const mark=(k,ok)=>{if(k in got)return;got[k]=!!ok;upd()};
