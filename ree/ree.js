@@ -7,12 +7,17 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
   const D=window.__REE;if(!D)return;
   const ORDER=D.order,EP=D.eps,BASE=0x10;   // chapters use path units 16, 17, …
   const STEPS=[['🎧','Слушай и разбери'],['✍️','Попълни празните места'],['❓','Отговори на въпросите']];
-  window.__reCodes=()=>{const o=[];ORDER.forEach(id=>{for(let n=1;n<=3;n++)o.push('E:'+id+'-'+n)});return o};
+  window.__reCodes=()=>{const o=[];ORDER.forEach((id,i)=>{for(let n=1;n<=3;n++)o.push('E:'+id+'-'+n);if(i+1<ORDER.length)o.push('E:'+id+'-4')});
+    /* students who already moved on to the next recording do not have to go back for the new word step */
+    try{const d=S.path2&&S.path2.done;if(d)ORDER.forEach((id,i)=>{const nx=ORDER[i+1];if(nx&&d['E:'+nx+'-1']&&!d['E:'+id+'-4'])d['E:'+id+'-4']=d['E:'+nx+'-1']})}catch(e){}
+    return o};
   window.__reHead=u=>{const e=EP[ORDER[u-BASE]];return e?[e.icon,e.bg]:['🎧','Истински разговори']};
   window.__reSmall=u=>{const i=u-BASE,e=EP[ORDER[i]];return 'Истински разговори · глава '+(i+1)+' от '+ORDER.length+(e?' · '+e.ser:'')};
   window.__reLesson=code=>{
     const m=/^E:(\w+)-(\d)$/.exec(code);if(!m||!EP[m[1]])return {code,kind:'listen',items:[]};
     const id=m[1],n=+m[2],e=EP[id],i=ORDER.indexOf(id);
+    if(n===4){const nx=EP[ORDER[i+1]];if(!nx)return {code,kind:'listen',items:[]};
+      return {code,icon:'📚',title:'Думи: преговор и подготовка',sub:'Думите от „'+e.bg+'“ и от следващия запис „'+nx.bg+'“ · нужни са 90%',kind:'listen',real:1,ep:id,step:4,unit:BASE+i,items:null}}
     return {code,icon:STEPS[n-1][0],title:STEPS[n-1][1],sub:e.icon+' '+e.bg+' · нужни са 90%',kind:'listen',real:1,ep:id,step:n,unit:BASE+i,items:null};
   };
 
@@ -71,7 +76,68 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
 `;document.head.append(st)}
 
   /* ---------- one lesson ---------- */
+  /* ---------- word step between two recordings: the words of the recording just done + the words of the next one ---------- */
+  function vocabRun(area,st,L,finish){
+    const id=L.ep,e=EP[id],ix=ORDER.indexOf(id),nid=ORDER[ix+1],ne=EP[nid];
+    if(!ne){finish();return}
+    const root=h('div',{class:'storyw lsw rew'});
+    const need=[],got={};
+    const info=h('span',{class:'lsupct'});const foot=h('div',{class:'refoot'});
+    const upd=()=>{const k=Object.keys(got),left=need.filter(x=>!(x in got)).length;
+      info.textContent=(k.length?'Резултат: '+Math.round(100*k.filter(x=>got[x]).length/k.length)+'% · ':'')+(need.length-left)+' от '+need.length;
+      if(need.length&&!left){const ok=need.filter(x=>got[x]).length;
+        foot.replaceChildren(h('p',null,`Готово: ${ok} от ${need.length} верни от първия път (${Math.round(100*ok/need.length)}%). За да продължите, трябват поне 90%.`),
+          h('button',{type:'button',class:'btn rose huge',onclick:()=>{stop();st.first=need.length;st.firstOk=ok;try{save()}catch(er){}finish()}},'Завърши урока →'))}
+      else foot.replaceChildren(h('p',null,'Изберете верния отговор за всяка дума. Брои се първият опит.'))};
+    const mark=(k,ok)=>{if(k in got)return;got[k]=!!ok;upd()};
+    /* audio: play one line of a recording */
+    const au=new Audio();au.preload='auto';let stopAt=null,onBtn=null;
+    const stop=()=>{try{au.pause()}catch(er){}stopAt=null;if(onBtn){onBtn.classList.remove('on');onBtn=null}};
+    au.addEventListener('timeupdate',()=>{if(!root.isConnected){stop();return}if(stopAt!=null&&au.currentTime>=stopAt)stop()});
+    async function hear(btn,ep,li){
+      if(onBtn===btn){stop();return}stop();const l=EP[ep].L[li];if(!l)return;
+      try{const u=await getAudio(ep);if(au.src!==u)au.src=u;au.currentTime=l[3][0]/100;stopAt=l[4]/100+0.15;onBtn=btn;btn.classList.add('on');await au.play()}catch(er){stop()}
+    }
+    /* distractors: meanings / words from these two recordings first, then from the others */
+    const allV=[].concat(...ORDER.map(k=>EP[k].v));
+    const near=[...e.v,...ne.v];
+    const wrongs=(right,col)=>{const seen=new Set([right.toLowerCase()]);const out=[];
+      for(const v of [...mix(near),...mix(allV)]){const x=v[col];if(!seen.has(x.toLowerCase())){seen.add(x.toLowerCase());out.push(x)}if(out.length>=2)break}return out};
+    const ask=(box,key,v,dir,ep)=>{
+      need.push(key);
+      const right=dir?v[0]:v[1],opts=mix([right,...wrongs(right,dir?0:1)]);
+      const row=h('div',{class:'lsopts'});
+      opts.forEach(o=>{const b=h('button',{type:'button',class:'lsopt'+(o===right?' right':''),lang:dir?'en':null},o);
+        b.addEventListener('click',()=>{if(row.classList.contains('over'))return;const ok=o===right;b.classList.add(ok?'ok':'bad');
+          if(!ok)row.querySelector('.right').classList.add('ok');row.classList.add('over');mark(key,ok);try{sfx&&sfx(ok?'ok':'bad')}catch(er){}});row.append(b)});
+      const head=h('div',{class:'revw'},dir?h('b',null,v[1]):h('b',{lang:'en'},v[0]),
+        (!dir&&v[2]!=null)?h('button',{type:'button',class:'rehear',onclick:ev=>hear(ev.currentTarget,ep,v[2])},'▶ Чуй'):null);   /* no sound on "how is it in English?" – it would give the answer away */
+      box.append(h('div',{class:'lsqi'},h('div',{class:'reqbg'},dir?'Как е на английски?':'Какво означава?'),head,row));
+    };
+    root.append(h('div',{class:'lesbar lsubar'},h('span',null,'📚 Думи: преговор и подготовка'),info),
+      h('div',{class:'lshead'},h('small',null,'Глава '+(ix+1)+' от '+ORDER.length+' · между два записа'),
+        h('h3',null,e.icon+' '+e.bg+'  →  '+ne.icon+' '+ne.bg),h('p',{class:'relead'},'Първо преговорете думите от записа, който току-що чухте. После се запознайте с думите от следващия запис – така ще го разберете по-лесно.')));
+    /* part 1: review */
+    const b1=h('div',{class:'lsex'},h('h4',null,'🔁 Преговор: думите от „'+e.bg+'“'),h('p',{class:'lsnote'},'С „▶ Чуй“ чувате изречението от записа, в което се среща думата.'));
+    mix(e.v.map((v,k)=>[v,k])).forEach(([v,k],j)=>ask(b1,'a'+k,v,j%2===1,id));
+    root.append(b1);
+    /* part 2: meet the new words, then practise them */
+    const b2=h('div',{class:'lsex'},h('h4',null,'🆕 Нови думи от „'+ne.bg+'“'),h('p',{class:'lsnote'},'Прочетете думите и примерите от следващия запис. Можете да чуете всеки пример.'));
+    ne.v.forEach(v=>{const l=v[2]!=null?ne.L[v[2]]:null;
+      b2.append(h('div',{class:'lsqi'},h('div',{class:'revw'},h('b',{lang:'en'},v[0]),h('span',null,'– '+v[1]),
+        l?h('button',{type:'button',class:'rehear',onclick:ev=>hear(ev.currentTarget,nid,v[2])},'▶ Пример'):null),
+        l?h('div',{class:'lsqq',lang:'en'},l[1]):null,l?h('div',{class:'reqbg'},l[2]):null))});
+    root.append(b2);
+    const b3=h('div',{class:'lsex'},h('h4',null,'✅ Проверете новите думи'),h('p',{class:'lsnote'},'Сега без подсказка – изберете верния отговор.'));
+    mix(ne.v.map((v,k)=>[v,k])).forEach(([v,k],j)=>ask(b3,'b'+k,v,j%2===0,nid));
+    root.append(b3,foot);
+    upd();
+    area.replaceChildren(root);
+    try{window.scrollTo({top:0})}catch(er){}
+  }
+
   window.__reRun=function(area,st,L,finish){
+    if(L.step===4){css();return vocabRun(area,st,L,finish)}
     css();
     const id=L.ep,e=EP[id],step=L.step,lines=e.L;
     const root=h('div',{class:'storyw lsw rew'});
