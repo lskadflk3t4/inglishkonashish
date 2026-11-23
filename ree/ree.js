@@ -7,13 +7,17 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
   const D=window.__REE;if(!D)return;
   const ORDER=D.order,EP=D.eps,BASE=0x10;   // chapters use path units 16, 17, …
   const STEPS=[['🎧','Слушай и разбери'],['✍️','Попълни празните места'],['❓','Отговори на въпросите']];
-  window.__reCodes=()=>{const o=[];ORDER.forEach((id,i)=>{for(let n=1;n<=3;n++)o.push('E:'+id+'-'+n);if(i+1<ORDER.length)o.push('E:'+id+'-4')});
+  window.__reCodes=()=>{const o=[];ORDER.forEach((id,i)=>{for(let n=1;n<=3;n++)o.push('E:'+id+'-'+n);o.push('B:E/'+id);if(i+1<ORDER.length)o.push('E:'+id+'-4')});
     /* students who already moved on to the next recording do not have to go back for the new word step */
     try{const d=S.path2&&S.path2.done;if(d)ORDER.forEach((id,i)=>{const nx=ORDER[i+1];if(nx&&d['E:'+nx+'-1']&&!d['E:'+id+'-4'])d['E:'+id+'-4']=d['E:'+nx+'-1']})}catch(e){}
     return o};
   window.__reHead=u=>{const e=EP[ORDER[u-BASE]];return e?[e.icon,e.bg]:['🎧','Истински разговори']};
   window.__reSmall=u=>{const i=u-BASE,e=EP[ORDER[i]];return 'Истински разговори · глава '+(i+1)+' от '+ORDER.length+(e?' · '+e.ser:'')};
+  window.__reSents=id=>EP[id]?EP[id].L.map(l=>[l[1],l[2]]):[];
   window.__reLesson=code=>{
+    const mb=/^B:E\/(\w+)$/.exec(code);
+    if(mb){const e=EP[mb[1]],i=ORDER.indexOf(mb[1]);const P=window.__sbPairs?window.__sbPairs(code):[];if(!e||!P.length)return {code,kind:'sb',items:[]};
+      return {code,icon:'🧩',title:'Подреди изреченията',sub:e.icon+' '+e.bg+' · '+P.length+' изречения · '+window.__sbRule(P.length),kind:'sb',unit:BASE+i,items:null}}
     const m=/^E:(\w+)-(\d)$/.exec(code);if(!m||!EP[m[1]])return {code,kind:'listen',items:[]};
     const id=m[1],n=+m[2],e=EP[id],i=ORDER.indexOf(id);
     if(n===4){const nx=EP[ORDER[i+1]];if(!nx)return {code,kind:'listen',items:[]};

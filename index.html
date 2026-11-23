@@ -3053,6 +3053,15 @@ window.__BOOT=()=>{migrate();renderStats();renderManual();renderLevels();renderT
 .asent{cursor:pointer;border-radius:5px;transition:background .15s,box-shadow .15s}
 .asent:hover{background:var(--gold-soft)}
 .asent.on{background:var(--rose-soft);box-shadow:0 0 0 3px var(--rose-soft)}
+.sbnote{margin:6px 2px 12px;color:var(--muted);font-size:14px}
+.sbq .build.ok{border-color:var(--ok);background:var(--ok-soft)}
+.sbq .build.bad{border-color:var(--bad);background:var(--bad-soft)}
+.sbq .pool{margin:14px 0}
+.sbbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.sbfix{margin:12px 0 4px;padding:10px 14px;border-radius:12px;background:var(--ok-soft);border:1px solid var(--ok);text-align:center}
+.sbfix small{display:block;color:var(--muted);margin-bottom:2px}
+.sbfix span{font-weight:700;font-size:17px}
+.sbq>.btn.rose{display:block;margin:14px auto 0}
 </style>
 <style>
 /* ===== mobile layer: bottom tab bar, pinned main button, backup section ===== */
@@ -6579,14 +6588,25 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     if(t==='E'){return window.__reLesson?window.__reLesson(code):{code,kind:'listen',items:[]}}
     if(t==='D'){const c=DATA.K.find(x=>x.id===a);if(!c)return {code,kind:'case',items:[]};return {code,icon:'🕵️',title:c.t,sub:'Досие · '+c.q.length+' въпроса · нужни са 90%',kind:'case',cid:a,unit:100,items:null}}
     if(t==='O'){const c=DATA.TO.find(x=>x.id===a);if(!c)return {code,kind:'trip',items:[]};return {code,icon:'🧭',title:c.t,sub:c.s+' · '+c.st.length+' задачи · нужни са 90%',kind:'trip',cid:a,unit:101,items:null}}
+    if(t==='B'){const [k,r]=a.split('/');
+      if(k==='E')return window.__reLesson?window.__reLesson(code):{code,kind:'sb',items:[]};
+      const P=sbPairs(code);if(!P.length)return {code,kind:'sb',items:[]};let unit,sub;
+      if(k==='L'){const [g,ix]=r.split('-');const part=window.__lsParts().filter(x=>x.g===g)[+ix];unit=8+LSU.findIndex(x=>x.includes(r));sub=part.e+' '+part.t}
+      else if(k==='D'){unit=100;sub='🕵️ '+DATA.K.find(x=>x.id===r).t}
+      else{unit=101;sub='🧭 '+DATA.TO.find(x=>x.id===r).t}
+      return {code,icon:'🧩',title:'Подреди изреченията',sub:sub+' · '+P.length+' изречения · '+sbRule(P.length),kind:'sb',unit,items:null}}
     if(t==='R'){return {code,icon:'🎓',title:'Голям преговор',sub:'Всичко от „Първи стъпки" – последната стъпка!',kind:'rev',items:null}}
   }
   /* Слушалня inside „Пътят напред": after every unit, a listening unit; each recording needs 90% to unlock the next lesson */
   const LSU=[['sc-7','dl-0','dl-11','dl-12','dl-4','bg-0'],['sc-0','sc-4','dl-8','dl-20','bg-1'],['sc-8','dl-21','dl-18','dl-9','bg-2'],['sc-1','dl-3','dl-13','dl-10','bg-3'],
     ['dl-2','dl-19','dl-16','bg-4'],['sc-5','dl-15','dl-6','bg-5'],['sc-3','sc-2','dl-1','dl-7','bg-6'],['sc-9','sc-6','dl-5','dl-14','dl-17','bg-7']];
-  const ORDER2X=()=>{const o=[];for(let u=0;u<8;u++){o.push(...ORDER2.slice(u*4,u*4+4));if(window.__lsParts)o.push(...LSU[u].map(c=>'L:'+c))}const byL=a=>a.map((c,i)=>[c,i]).sort((x,y)=>String(x[0].l).localeCompare(String(y[0].l))||x[1]-y[1]).map(x=>x[0].id);
-    o.push(...byL(DATA.K).map(id=>'D:'+id),...byL(DATA.TO).map(id=>'O:'+id));
-    if(window.__reCodes)o.push(...window.__reCodes());return o};
+  const ORDER2X=()=>{const o=[];for(let u=0;u<8;u++){o.push(...ORDER2.slice(u*4,u*4+4));if(window.__lsParts)LSU[u].forEach(c=>o.push('L:'+c,'B:L/'+c))}const byL=a=>a.map((c,i)=>[c,i]).sort((x,y)=>String(x[0].l).localeCompare(String(y[0].l))||x[1]-y[1]).map(x=>x[0].id);
+    byL(DATA.K).forEach(id=>o.push('D:'+id,'B:D/'+id));byL(DATA.TO).forEach(id=>o.push('O:'+id,'B:O/'+id));
+    if(window.__reCodes)o.push(...window.__reCodes());
+    sbMigrate(o);return o};
+  /* students who are already past a listening do not have to go back for its new sentence-building step (once) */
+  function sbMigrate(o){try{if(S.sbMig)return;const d=pst(2).done;let last=-1;o.forEach((c,i)=>{if(d[c]&&c[0]!=='B')last=i});
+    if(last>0)o.forEach((c,i)=>{if(i<last&&c[0]==='B'&&!d[c])d[c]=1});S.sbMig=1;save()}catch(e){}}
   /* Детектив and Изгубеният турист as two chapters of „Пътят напред" (units 100 and 101) */
   const CU={100:['🕵️','Детектив','Случаи за разкриване · '+DATA.K.length+' досиета'],101:['🧭','Изгубеният турист','Ориентиране в непознато място · '+DATA.TO.length+' ситуации']};
   const LS=n=>(n===2?ORDER2X():ORDER).map(lesson).filter(L=>L.items==null||L.items.length);
@@ -6669,6 +6689,66 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     };
     ask();
   }
+  /* ---------- „Подреди изреченията": after every listening – the Bulgarian sentence is given, the English one is built from blocks ---------- */
+  const SBC={},SB_N=10;
+  const sbRule=n=>n>=5?'най-много 1 грешка':'без грешки';window.__sbRule=sbRule;
+  /* a sentence ends at . ! ? followed by a capital letter, a quote or a digit – so "1910 г. и" and "Mr Popov" do not split */
+  const sbSents=t=>String(t).replace(/\s+/g,' ').trim().split(/(?<=[.!?]["”“']?)\s+(?=[A-ZА-Я„"“'(0-9])/).map(x=>x.trim()).filter(x=>/[.!?]["”“']?$/.test(x));
+  function sbPairs(code){
+    if(SBC[code])return SBC[code];
+    const m=/^B:(\w)\/(.+)$/.exec(code);if(!m)return [];let raw=[],ready=true;
+    try{
+      if(m[1]==='L'){ready=!!window.__lsParts;const [g,ix]=m[2].split('-');const part=ready?window.__lsParts().filter(x=>x.g===g)[+ix]:null;if(part)raw=part.lines.map(l=>[l.en,l.bg])}
+      else if(m[1]==='D'){const c=DATA.K.find(x=>x.id===m[2]);if(c)raw=[[c.x,c.b]]}
+      else if(m[1]==='O'){const c=DATA.TO.find(x=>x.id===m[2]);if(c)raw=[[c.x,c.y]]}
+      else if(m[1]==='E'){ready=!!window.__reSents;if(ready)raw=window.__reSents(m[2])}
+    }catch(e){}
+    const cand=[];
+    const qt=x=>/["“”]/.test(x),dg=x=>(x.match(/\d+/g)||[]).join(','),wc=x=>x.split(/\s+/).length;
+    const ok=(e,b)=>{const r=wc(b)/wc(e);if(!(r>.45&&r<2.2))return false;const de=dg(e),db=dg(b);return !(de&&db)||de===db};
+    raw.forEach(([en,bg])=>{const E=sbSents(en),B=sbSents(bg);if(!E.length||!B.length)return;
+      if(E.length===B.length){E.forEach((e,i)=>cand.push([e,B[i]]));return}
+      /* dialogue is punctuated differently in the two languages: pair only the sentences before the first and after the last quotation */
+      let a=0;while(a<E.length&&a<B.length&&!qt(E[a])&&ok(E[a],B[a])){cand.push([E[a],B[a]]);a++}
+      let x=E.length-1,y=B.length-1;const tail=[];while(x>=a&&y>=a&&!qt(E[x])&&ok(E[x],B[y])){tail.unshift([E[x],B[y]]);x--;y--}
+      cand.push(...tail)});
+    const take=(min,max)=>{const out=[],seen=new Set();cand.forEach(([e,b])=>{const w=e.replace(/[.!?]+$/,'').split(/\s+/);if(w.length<min||w.length>max)return;if(/["“”„«»–—…]|\s-\s|\.\.\./.test(e)||/\p{Extended_Pictographic}|\b[a-d]\)/u.test(e))return;
+      const k=e.toLowerCase();if(seen.has(k))return;seen.add(k);out.push([e,b])});return out};
+    let out=take(3,15);if(out.length<4)out=take(2,18);if(out.length<3)out=take(2,24);
+    const pick=out.length<=SB_N?out:Array.from({length:SB_N},(_,i)=>out[Math.round(i*(out.length-1)/(SB_N-1))]);
+    const res=pick.length>=3?pick:[];if(ready)SBC[code]=res;return res;
+  }
+  window.__sbPairs=sbPairs;
+  function sbRun(area,st,L,finish){
+    const P=sbPairs(L.code);if(!P.length){finish();return}
+    if(!Array.isArray(st.res))st.res=[];
+    const qa=h('div');
+    area.replaceChildren(h('div',{class:'lesbar'},h('span',null,L.icon+' '+L.title),h('span',null,sbRule(P.length))),
+      h('p',{class:'sbnote'},'Прочетете българското изречение и подредете английските думи така, че да го преведете. Без подсказки.'),qa);
+    const ask=()=>{
+      if(!area.isConnected)return;
+      const i=st.res.length,score=st.res.filter(Boolean).length;
+      if(i>=P.length){st.first=P.length;st.firstOk=score;save();finish();return}
+      const [en,bg]=P[i],words=en.replace(/[.!?]+$/,'').split(/\s+/),end=(en.match(/[.!?]+$/)||[''])[0];
+      const q=h('div',{class:'q sbq'});
+      q.append(h('div',{class:'bar',style:'width:100%'},h('span',null,'Изречение '+(i+1)+' / '+P.length),h('div',{class:'prog'},h('i',{style:`width:${100*i/P.length}%`})),h('span',null,'Верни: '+score)));
+      const line=h('div',{class:'build'}),pl=h('div',{class:'pool'}),ph=h('span',{class:'bph'},'Докоснете думите отдолу'),pe=h('span',{class:'punct'},end);line.append(ph,pe);
+      let fin=false;const chk=h('button',{type:'button',class:'btn rose',hidden:true},'Провери'),idk=h('button',{type:'button',class:'btn idk'},'Не знам');
+      const tiles=()=>[...line.querySelectorAll('.tile'),...pl.querySelectorAll('.tile')];
+      const over=ok=>{if(fin)return;fin=true;chk.remove();idk.remove();tiles().forEach(x=>x.disabled=true);line.classList.add(ok?'ok':'bad');
+        if(!ok)q.append(h('div',{class:'sbfix'},h('small',null,'Правилно:'),h('span',{lang:'en'},en)));
+        st.res.push(!!ok);save();try{sfx(ok?'ok':'bad')}catch(e){}
+        const nx=h('button',{class:'btn rose',type:'button',onclick:ask},i+1<P.length?'Следващо →':'Край →');q.append(nx);try{nx.focus()}catch(e){}};
+      let order=shuffle(words);if(words.length>1&&new Set(words).size>1){let t=0;while(order.join(' ')===words.join(' ')&&t++<8)order=shuffle(words)}
+      order.forEach(w=>{const b=h('button',{type:'button',class:'tile',lang:'en'},w);
+        b.onclick=()=>{if(fin)return;if(b.parentNode===pl)line.insertBefore(b,pe);else pl.append(b);const n=line.querySelectorAll('.tile').length;ph.hidden=n>0;chk.hidden=n!==words.length};pl.append(b)});
+      chk.onclick=()=>over([...line.querySelectorAll('.tile')].map(x=>x.textContent).join(' ').toLowerCase()===words.join(' ').toLowerCase());
+      idk.onclick=()=>over(false);
+      q.append(h('div',{class:'kind'},'Преведете на английски'),h('div',{class:'lqbg'},'„'+bg+'"'),line,pl,h('div',{class:'sbbtns'},chk,idk));
+      qa.replaceChildren(q);try{window.scrollTo({top:0})}catch(e){}
+    };
+    ask();
+  }
   function beginLesson(code){
     const L=lesson(code);const st={code,stage:GRC[code]?'intro':L.kind==='rev'?'prac':L.kind==='story'?'read':'meet',gi:0,mi:0,first:0,firstOk:0,done:0,seen:[],Q:null,cur:null};
     if(L.kind==='rev'){const pool=[];LS(1).forEach(x=>{if(x.items&&x.kind!=='snd'&&x.kind!=='tr')pool.push(...x.items.map(it=>it.key))});st.items=shuffle(pool).slice(0,12)}
@@ -6678,7 +6758,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
     const st=S.run.lesson;const L0=lesson(st.code);
     if(!L0){delete S.run.lesson;save();return drawPath(p)}
     const L=L0.kind==='rev'?Object.assign({},L0,{items:(st.items||[]).map(findItem).filter(Boolean),kind:'mixrev'}):L0;
-    p.append(h('button',{type:'button',class:'backpill',onclick:()=>{st.paused=1;save();renderPanel()}},h('span',{'aria-hidden':'true'},'‹'),PNAME(ORDER2.includes(st.code)||/^[LEDO]:/.test(st.code)?2:1)));
+    p.append(h('button',{type:'button',class:'backpill',onclick:()=>{st.paused=1;save();renderPanel()}},h('span',{'aria-hidden':'true'},'‹'),PNAME(ORDER2.includes(st.code)||/^[LEDOB]:/.test(st.code)?2:1)));
     const area=h('div',{class:'les'});p.append(area);
     const typesFor=it=>it.k==='g'?['gf','build']:it.k==='p'?['hear','build']:(it.ex&&L.kind!=='word')?['en2bg','fill']:['en2bg','bg2en'];
     /* ---- explanation ---- */
@@ -6809,10 +6889,10 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       area.replaceChildren(h('div',{class:'lesbar'},h('span',null,L.icon+' '+L.title),h('span',null,'Част '+(L.unit+1))),v,h('div',{class:'mnav'},go));
     }
     function finish(){
-      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||pct>=90&&!(L.kind==='listen'&&!st.first),stars=pct>=100?3:pct>=95?2:1;
-      const inP2=ORDER2.includes(L.code)||L.kind==='listen'||L.kind==='case'||L.kind==='trip';
+      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||(L.kind==='sb'?(st.first-st.firstOk)<=(st.first>=5?1:0)&&st.first>0:pct>=90&&!(L.kind==='listen'&&!st.first)),stars=pct>=100?3:pct>=95?2:1;
+      const inP2=ORDER2.includes(L.code)||L.kind==='listen'||L.kind==='case'||L.kind==='trip'||L.kind==='sb';
       /* Живи картини: in „Пътят напред" a passed lesson ends with 10 correct answers in pictures */
-      if(inP2&&pass&&!st.picOk&&L.kind!=='listen'&&L.kind!=='case'&&L.kind!=='trip'&&window.__scnGate){try{const ui=L.unit|0,pos=ORDER2.indexOf(L.code)%4;
+      if(inP2&&pass&&!st.picOk&&L.kind!=='listen'&&L.kind!=='case'&&L.kind!=='trip'&&L.kind!=='sb'&&window.__scnGate){try{const ui=L.unit|0,pos=ORDER2.indexOf(L.code)%4;
         const SC=[['day','kitchen','bedroom','day'],['terminal','airport','station','hotel'],['park','library','classroom','living'],['town','oldtown','street','harbour'],
           ['clothes','market','clothes','cafe'],['weather','seasons','weather','park'],['restaurant','cafe','restaurant','kitchen'],['faces','party','wedding','concert']][ui]||['kitchen'];
         const sc=SC.slice(pos).concat(SC.slice(0,pos));
@@ -6822,20 +6902,20 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       if(!pass){
         area.replaceChildren(h('div',{class:'done-card'},h('div',{class:'stars'},[0,1,2].map(()=>h('span',{class:'star off'},'⭐'))),
           h('div',{class:'acc'},h('div',{class:'big'},pct+'%'),h('span',{class:'lbl2'},'от първия опит')),
-          h('p',null,'За да продължите, трябват поне 90% от първия опит. Повторете урока – вторият път винаги е по-лесно!'),
+          h('p',null,L.kind==='sb'?'За да продължите, допуска се '+(st.first>=5?'най-много 1 грешка':'0 грешки')+' от първия опит. Опитайте пак – изреченията се подреждат по-лесно втория път!':'За да продължите, трябват поне 90% от първия опит. Повторете урока – вторият път винаги е по-лесно!'),
           h('button',{class:'btn rose huge',type:'button',onclick:()=>beginLesson(L.code)},'↻ Повтори урока'),
           h('button',{class:'btn alt',type:'button',onclick:()=>{renderPanel();try{window.scrollTo({top:0})}catch(e){}}},'Към пътеката')));
         return;
       }
       area.replaceChildren(h('div',{class:'done-card'},h('div',{class:'stars'},[0,1,2].map(i=>h('span',{class:'star'+(i<stars?'':' off')},'⭐'))),
         h('div',{class:'acc'},h('div',{class:'big'},pct+'%'),h('span',{class:'lbl2'},'от първия опит')),
-        h('p',null,L.kind==='case'?'Случаят е разкрит! Отлична детективска работа.':L.kind==='trip'?'Стигнахте до целта! Следва следващата ситуация.':L.real?'Браво! Урокът е минат – следва следващата стъпка от главата.':L.kind==='listen'?'Браво! Чухте и разбрахте записа. Можете да го чуете пак в Игри → Слушалня.':L.kind==='snd'?'Урокът е завършен!':L.kind==='tr'?'Браво! Вече можете да правите въпроси и отрицания.':L.kind==='gram'?'Браво! Правилото вече е ваше.':L.kind==='story'?(STORIES[L.sid][0]==='Диалог'?'Диалогът е минат! Можете да го чуете пак в Игри → Истории и диалози.':'Историята е прочетена! Можете да я чуете пак в Игри → Истории и диалози.'):`Урокът е завършен – знаете всички ${L.items.length} ${L.kind==='phr'?'изречения':'думи'} от него!`),
+        h('p',null,L.kind==='case'?'Случаят е разкрит! Отлична детективска работа.':L.kind==='trip'?'Стигнахте до целта! Следва следващата ситуация.':L.kind==='sb'?'Браво! Подредихте изреченията – следва следващата стъпка.':L.real?'Браво! Урокът е минат – следва следващата стъпка от главата.':L.kind==='listen'?'Браво! Чухте и разбрахте записа. Можете да го чуете пак в Игри → Слушалня.':L.kind==='snd'?'Урокът е завършен!':L.kind==='tr'?'Браво! Вече можете да правите въпроси и отрицания.':L.kind==='gram'?'Браво! Правилото вече е ваше.':L.kind==='story'?(STORIES[L.sid][0]==='Диалог'?'Диалогът е минат! Можете да го чуете пак в Игри → Истории и диалози.':'Историята е прочетена! Можете да я чуете пак в Игри → Истории и диалози.'):`Урокът е завършен – знаете всички ${L.items.length} ${L.kind==='phr'?'изречения':'думи'} от него!`),
         (!inP2&&fin(1))?h('div',{class:'pthdone'},'🎓 Завършихте „Първи стъпки"! Следва „Пътят напред" – пътуването на Бай Ганьо до Лондон.'):(inP2&&fin(2))?h('div',{class:'pthdone'},'🏁 Завършихте „Пътят напред"! Оттук нататък бутонът „Започни" в Днес ви дава обичайния рунд от 30 задачи.'):null,
         h('button',{class:'btn rose huge',type:'button',onclick:()=>{renderPanel();try{window.scrollTo({top:0})}catch(e){}}},'Продължи по пътеката →')));
       if(!inP2&&fin(1)&&!S.pathFin){S.pathFin=today();save();try{X.checkStickers(false)}catch(e){}}
       if(inP2&&fin(2)&&!S.path2Fin){S.path2Fin=today();save();try{X.checkStickers(false)}catch(e){}}
     }
-    function route(){if(L.kind==='case'||L.kind==='trip'){caseRun(area,st,L,finish);return}if(L.real&&window.__reRun){window.__reRun(area,st,L,finish);return}if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(L.kind==='listen'){/* the listening part of the app is still loading: wait for it, never fall through to an empty lesson */area.replaceChildren(h('p',{class:'empty'},'⏳ Зареждане…'));let n=0;const w=()=>{if(!area.isConnected)return;const L2=lesson(st.code);if(window.__lsRun&&L2&&(L2.part||L2.real)){renderPanel();return}if(++n<60)setTimeout(w,100)};setTimeout(w,100);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
+    function route(){if(L.kind==='sb'){sbRun(area,st,L,finish);return}if(L.kind==='case'||L.kind==='trip'){caseRun(area,st,L,finish);return}if(L.real&&window.__reRun){window.__reRun(area,st,L,finish);return}if(L.kind==='listen'&&window.__lsRun){window.__lsRun(area,st,L,finish);return}if(L.kind==='listen'){/* the listening part of the app is still loading: wait for it, never fall through to an empty lesson */area.replaceChildren(h('p',{class:'empty'},'⏳ Зареждане…'));let n=0;const w=()=>{if(!area.isConnected)return;const L2=lesson(st.code);if(window.__lsRun&&L2&&(L2.part||L2.real)){renderPanel();return}if(++n<60)setTimeout(w,100)};setTimeout(w,100);return}if(st.stage==='read')readStory();else if(st.stage==='intro')intro();else if(st.stage==='meet')showMeet();else if(st.stage==='lm')lm();else prac()}
     route();
   }
   /* ---------- story / dialogue reader (used in the path and in the library) ---------- */
