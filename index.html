@@ -1710,6 +1710,42 @@ const QWN={who:['Who','Who = кой? Пита за човек.'],what:['What','W
   howfar:['How far','How far = колко далеч? Пита за разстояние: metres, kilometres.'],
   howold:['How old','How old = на колко години? Пита за възраст.'],
   whattime:['What time','What time = в колко часа? Пита за точния час: at seven o\'clock.']};
+/* ---------- real recordings with sentence highlighting (Детектив + Изгубеният турист) ---------- */
+const AUD={"det-cat":{"s":[0.0,3.02,6.75,10.3,16.79,19.26,21.61,26.09,32.15,33.53,35.28,39.23]},"det-wallet":{"s":[0.0,1.52,4.31,7.33,9.63,14.92,19.18,23.95,26.0,30.81,33.02,35.26,38.0,39.83,41.33]},"det-bike":{"s":[0.0,2.85,7.24,11.5,14.03,18.98,20.37,22.95,26.35,28.43,32.79,36.04,38.5,41.49,43.55,46.22]},"det-boy":{"s":[0.0,5.34,7.6,12.87,16.26,19.44,24.07,26.95,30.24,33.74,37.48,39.86,45.46,47.28,52.52,55.19,58.43]},"det-necklace":{"s":[0.0,4.74,10.61,15.17,18.78,22.6,25.6,29.35,32.18,35.99,38.88,41.92,43.46,46.32,48.68,51.23]},"det-painting":{"s":[0.0,5.72,11.34,14.87,19.15,21.25,24.18,31.14,34.72,41.51,44.29,46.13,49.21,53.59,57.78,60.11,63.93]},"det-laptop":{"s":[0.0,3.86,8.19,16.11,18.85,21.02,23.11,27.36,32.63,39.87,42.21,44.66,49.28,51.98,54.18]},"det-hiker":{"s":[0.0,3.87,8.18,12.79,18.71,22.18,30.24,33.2,38.55,41.53,46.77,48.87,54.36,56.99,61.12]},"det-ring":{"s":[0.0,2.75,10.12,15.96,18.2,23.51,25.14,27.95,33.03,35.73,41.12,45.45,47.74,49.29,53.06,55.96]},"det-suitcase":{"s":[0.0,4.32,7.16,13.27,19.29,21.58,25.88,28.21,33.01,35.13,39.46,42.37,45.8,49.88,52.93,54.9,57.87]},"det-bakery":{"s":[0.0,3.74,7.95,11.44,16.94,19.27,22.8,27.05,31.21,34.46,39.54,42.74,45.55,49.63,54.9]},"tour-station":{"s":[0.0,3.05,6.18,10.18,12.66]},"tour-hotel":{"s":[0.0,2.69,5.52,9.19,12.88,15.13]},"tour-oldtown":{"s":[0.0,2.85,7.67,11.89,16.06,19.85,23.53]},"tour-airport":{"s":[0.0,2.19,9.3,11.65,14.04,18.06,24.63]},"tour-daytrip":{"s":[0.0,3.05,10.05,13.83,18.31,23.37]},"tour-pharmacy":{"s":[0.0,3.92,6.86,9.7,15.99,20.47,23.85]},"tour-meet":{"s":[0.0,5.39,10.34,14.43,19.87]},"tour-mountain":{"s":[0.0,3.97,6.64,9.5,16.01,19.18,24.0]},"tour-citytour":{"s":[0.0,4.74,7.27,12.98,16.99,21.05,27.11]},"tour-metro":{"s":[0.0,3.42,7.03,9.42,12.12,14.92,20.04]}};
+let AU_CUR=null;
+function auSplit(t){const out=[];let cur=0;const re=/[.!?]["”]?\s+(?=["“A-Z0-9])/g;let m;while((m=re.exec(t))){out.push(t.slice(cur,m.index+m[0].length).trim());cur=m.index+m[0].length}out.push(t.slice(cur).trim());return out.filter(Boolean)}
+const auFmt=s=>{s=Math.max(0,Math.round(s||0));return (s/60|0)+':'+String(s%60).padStart(2,'0')};
+function audioText(text,key){
+  const meta=AUD[key],parts=auSplit(text);
+  const p=h('p',{class:'ctext atext'});p.dataset.sp='1';          /* dataset.sp: no robotic "read aloud" button on top of the real recording */
+  if(!meta||meta.s.length!==parts.length){p.textContent=text;return p}
+  const au=new Audio();au.preload='auto';
+  const url='audio/'+key+'.mp3';
+  let ready=null;
+  const load=()=>ready||(ready=fetch(url).then(r=>{if(!r.ok)throw 0;return r.blob()}).then(b=>{au.src=URL.createObjectURL(b);return new Promise(ok=>{if(au.readyState>=1)return ok();au.addEventListener('loadedmetadata',ok,{once:true})})}).catch(()=>{ready=null;throw 0}));
+  const spans=parts.map((s,i)=>h('span',{class:'asent',onclick:()=>{load().then(()=>{au.currentTime=meta.s[i];play()}).catch(()=>{})}},s));
+  spans.forEach((sp,i)=>{if(i)p.append(' ');p.append(sp)});
+  const btn=h('button',{class:'btn rose aplay',type:'button','aria-label':'Слушай'},'▶ Слушай');
+  const rng=h('input',{type:'range',class:'aseek',min:0,max:1000,value:0,step:1,'aria-label':'Позиция'});
+  const tm=h('span',{class:'atime'},'0:00');
+  const speeds=[1,0.85,0.7];let si=0;
+  const spd=h('button',{class:'btn alt aspd',type:'button',title:'Скорост',onclick:()=>{si=(si+1)%speeds.length;au.playbackRate=speeds[si];spd.textContent=speeds[si]+'×'}},'1×');
+  const bar=h('div',{class:'abar'},btn,rng,tm,spd);
+  const wrap=h('div',{class:'aud'},bar,p);
+  let cur=-1;
+  const mark=t=>{let i=-1;for(let j=0;j<meta.s.length;j++)if(meta.s[j]-0.12<=t)i=j;if(i===cur)return;cur=i;spans.forEach((sp,j)=>sp.classList.toggle('on',j===i))};
+  const play=()=>{if(typeof ttsStop==='function')try{ttsStop()}catch(e){}
+    if(AU_CUR&&AU_CUR!==au)AU_CUR.pause();AU_CUR=au;au.playbackRate=speeds[si];au.play().catch(()=>{})};
+  btn.addEventListener('click',()=>{if(!au.paused){au.pause();return}load().then(play).catch(()=>{btn.textContent='Няма звук'})});
+  au.addEventListener('play',()=>{btn.textContent='⏸ Пауза'});
+  au.addEventListener('pause',()=>{btn.textContent=au.ended?'↺ Отново':'▶ Слушай'});
+  au.addEventListener('ended',()=>{btn.textContent='↺ Отново';cur=-2;spans.forEach(sp=>sp.classList.remove('on'));au.currentTime=0;rng.value=0;tm.textContent=auFmt(au.duration)});
+  au.addEventListener('timeupdate',()=>{if(!wrap.isConnected){au.pause();return}
+    if(au.duration){rng.value=Math.round(1000*au.currentTime/au.duration);tm.textContent=auFmt(au.currentTime)+' / '+auFmt(au.duration)}mark(au.currentTime)});
+  rng.addEventListener('input',()=>{load().then(()=>{au.currentTime=au.duration*rng.value/1000;mark(au.currentTime)}).catch(()=>{})});
+  load().catch(()=>{});                                            /* small files: fetch now so the first tap plays at once (and gets cached for offline) */
+  return wrap;
+}
 function gDet(p){
   p.append(...head('Детектив','Прочетете полицейското досие и разкрийте случая, като отговорите на въпросите на детектива.',
     '<b>Как се играе:</b> изберете случай. Прочетете текста внимателно – можете да отворите превода на български. После отговорете на въпросите с блокчетата с думи. Етикетът показва въпросителната дума и какво пита тя. Преводът на въпроса се отваря само ако натиснете бутона „Превод на въпроса". Всеки верен отговор влиза в бележника на детектива.'));
@@ -1725,7 +1761,7 @@ function gDet(p){
     const no=String(DATA.K.indexOf(c)+101);
     const trEl=h('p',{class:'ctr'},c.b);trEl.hidden=true;
     const trBtn=h('button',{class:'btn alt',type:'button',onclick:()=>{trEl.hidden=!trEl.hidden;trBtn.textContent=trEl.hidden?'Покажи превода':'Скрий превода'}},'Покажи превода');
-    const file=h('div',{class:'casefile'},h('div',{class:'chead'},h('span',{class:'cno'},'ДОСИЕ № '+no),h('span',{class:'stamp'},c.s)),h('h3',null,c.t),h('p',{class:'ctext'},c.x),trEl,h('div',null,trBtn));
+    const file=h('div',{class:'casefile'},h('div',{class:'chead'},h('span',{class:'cno'},'ДОСИЕ № '+no),h('span',{class:'stamp'},c.s)),h('h3',null,c.t),audioText(c.x,'det-'+c.id),trEl,h('div',null,trBtn));
     const notes=h('ol',{class:'notes'});const nbox=h('div',{class:'notebook'},h('div',{class:'lbl'},'Бележник на детектива'),notes);
     const qa=h('div');
     area.replaceChildren(h('div',{class:'opts'},h('button',{class:'btn alt',onclick:list},'← Всички случаи'),h('span',{class:'tag'},c.l)),file,qa,nbox);
@@ -1856,7 +1892,7 @@ function gTour(p){
     const trEl=h('p',{class:'ctr'},c.y);trEl.hidden=true;
     const trBtn=h('button',{class:'btn alt',type:'button',onclick:()=>{trEl.hidden=!trEl.hidden;trBtn.textContent=trEl.hidden?'Покажи превода':'Скрий превода'}},'Покажи превода');
     const card=h('div',{class:'casefile tourfile'},h('div',{class:'chead'},h('span',{class:'cno'},'ПЪТЕВОДИТЕЛ'),h('span',{class:'stamp'},c.s)),h('h3',null,c.t),
-      c.m.length?mapEl(c.m,c.lg):null,h('p',{class:'ctext'},c.x),trEl,h('div',null,trBtn));
+      c.m.length?mapEl(c.m,c.lg):null,audioText(c.x,'tour-'+c.id),trEl,h('div',null,trBtn));
     const qa=h('div');
     area.replaceChildren(h('div',{class:'opts'},h('button',{class:'btn alt',onclick:list},'← Всички ситуации'),h('span',{class:'tag'},c.l)),card,qa);
     const ask=()=>{
@@ -3006,6 +3042,18 @@ window.__BOOT=()=>{migrate();renderStats();renderManual();renderLevels();renderT
 </script>
 
 
+<style>
+/* real-recording player */
+.aud{display:flex;flex-direction:column;gap:10px}
+.abar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.aplay{min-width:118px}
+.aseek{flex:1 1 120px;min-width:90px;accent-color:var(--rose)}
+.atime{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.aspd{min-width:52px;padding-left:10px;padding-right:10px}
+.asent{cursor:pointer;border-radius:5px;transition:background .15s,box-shadow .15s}
+.asent:hover{background:var(--gold-soft)}
+.asent.on{background:var(--rose-soft);box-shadow:0 0 0 3px var(--rose-soft)}
+</style>
 <style>
 /* ===== mobile layer: bottom tab bar, pinned main button, backup section ===== */
 .bnav,.pinbar{display:none}
