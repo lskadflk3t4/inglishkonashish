@@ -175,6 +175,7 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
       step===2?null:tg(step===3?'txt3':'txt',step!==3,'Aa Текст','Покажи или скрий английския текст'),
       tg('bg',false,'🇧🇬 Превод','Покажи превода на български'),
       tg('fol',true,'〰 Следене','Подчертава думата, която се чува, и превърта екрана')));
+    {const th=window.twHint?twHint():null;if(th)root.append(th)}
     if(step===1)root.append(h('p',{class:'relead'},'Пуснете записа отдолу. Докоснете изречение, за да го чуете отново. Превода можете да включите с бутона „🇧🇬 Превод“.'));
     if(step===3)root.append(h('p',{class:'relead'},'Този път текстът е скрит – опитайте да разберете само на слух. Можете да го покажете с „Aa Текст“, а всеки въпрос има бутон „▶ Чуй откъса“.'));
     const warn=h('p',{class:'rewarn',hidden:true});root.append(warn);
