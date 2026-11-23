@@ -7242,7 +7242,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
   const $p=()=>document.getElementById('panel');
   const goT=k=>{S.tab=k;save();renderTabs();renderPanel();try{window.scrollTo({top:0})}catch(e){}};
   /* the path tab carries the name of the current path */
-  const nameFix=()=>{try{const t=TABS.find(x=>x[0]==='path');if(t&&window.__PV&&window.__PV()===2){t[1]='Пътят напред';TABINFO.path='Пътуването на Бай Ганьо до Лондон: 8 части с думи, граматика, истории и диалози, а после 24 истински разговора от BBC.'}}catch(e){}};
+  const nameFix=()=>{try{const t=TABS.find(x=>x[0]==='path');if(t&&window.__PV&&window.__PV()===2){t[1]='Пътят напред';TABINFO.path='Пътуването на Бай Ганьо до Лондон: 8 части с думи, граматика, истории и диалози, а после истински записи с живи гласове – разговори от BBC и истории с диалози.'}}catch(e){}};
   nameFix();const _rt=renderTabs;renderTabs=function(){nameFix();return _rt.apply(this,arguments)};
   /* ---- Игри → Истории и диалози ---- */
   const LIST=['s1','d1','s2','s3','d2','d3','d4','s4'];
@@ -8325,7 +8325,7 @@ const LS_GQ={
   function open(id,step){S.reView={id,step:step||1};S.lsView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
   function close(){S.reView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
   function group(){
-    return [h('div',{class:'lsgrp refgrp'},h('h3',null,'🎙️ Истински разговори'),h('p',null,'24 истински записа с живи гласове – свободен достъп. Всеки има 3 упражнения: слушане с думите, празни места и въпроси.')),
+    return [h('div',{class:'lsgrp refgrp'},h('h3',null,'🎙️ Истински разговори'),h('p',null,ORDER.length+' истински записа с живи гласове – свободен достъп. Всеки има 3 упражнения: слушане с думите, празни места и въпроси.')),
       h('div',{class:'stlib'},ORDER.map((id,i)=>{const e=EP[id];const k=nDone(id);
         return h('button',{type:'button',class:'stcard',onclick:()=>open(id,1)},h('span',{class:'si'},e.icon),
           h('span',{class:'st2'},h('b',null,(i+1)+'. '+e.bg),h('small',{lang:'en'},'„'+e.t+'“ · '+e.ser)),
