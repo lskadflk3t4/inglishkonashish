@@ -1736,6 +1736,30 @@ function twLookup(raw){
 }
 function twWords(t){const out=[];String(t).split(/(\s+)/).forEach(x=>{if(!x)return;if(/[A-Za-z]/.test(x))out.push(h('span',{class:'tw',lang:'en'},x));else out.push(x)});return out}
 function twHint(){return S.twSeen?null:h('p',{class:'twhint'},'👆 Докоснете коя да е английска дума от текста, за да видите превода ѝ.')}
+/* unknown words: tap a word → "⭐ Непозната" – it stays highlighted in every text until it is unmarked */
+function twKey(r){return r?(r.base||r.w):''}
+function twUnk(){if(!S.unk||typeof S.unk!=='object')S.unk={};return S.unk}
+function twUnkBtn(r){
+  const k=twKey(r);if(!k)return null;
+  const b=h('button',{type:'button',class:'wtunk'});
+  const lab=()=>{const on=!!twUnk()[k];b.textContent=on?'✓ Вече я знам':'⭐ Непозната';b.classList.toggle('on',on);
+    b.setAttribute('aria-label',on?'Махни от непознатите думи':'Отбележи като непозната дума')};
+  b.onclick=ev=>{ev.stopPropagation();const U=twUnk();if(U[k])delete U[k];else U[k]={bg:r.bg||'',t:Date.now()};save();lab();twMarkAll()};
+  lab();return b;
+}
+const TWK=new WeakMap();let TWM_RAF=0;
+function twMarkAll(){
+  const U=twUnk(),any=Object.keys(U).length;
+  document.querySelectorAll('.tw,.lsen .lw').forEach(el=>{
+    if(el.closest('.regap'))return;
+    const t=el.textContent;let c=TWK.get(el);
+    if(!c||c.t!==t){if(!any){el.classList.remove('wunk');return}const r=twLookup(t);c={t,k:r?twKey(r):''};TWK.set(el,c)}
+    el.classList.toggle('wunk',!!(c.k&&U[c.k]))});
+}
+/* new text on screen (a lesson, a story, a transcript) gets its unknown words highlighted */
+new MutationObserver(recs=>{if(!S.unk||!Object.keys(S.unk).length||TWM_RAF)return;
+  if(!recs.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches('.tw,.lw')||n.querySelector('.tw,.lw')))))return;
+  TWM_RAF=requestAnimationFrame(()=>{TWM_RAF=0;twMarkAll()})}).observe(document.documentElement,{childList:true,subtree:true});
 function twClose(){if(TW_SEL)TW_SEL.classList.remove('wsel');TW_SEL=null;if(TW_TIP)TW_TIP.remove();TW_TIP=null;clearInterval(TW_T)}
 function twShow(el){
   const same=TW_SEL===el;twClose();if(same)return;
@@ -1745,7 +1769,8 @@ function twShow(el){
   const tip=h('div',{class:'wtip',role:'status'},
     h('div',null,h('div',{class:'wtw',lang:'en'},r.w+(r.base?' ← '+r.base:'')),
     h('div',{class:'wtb'+(r.bg?'':' none')},r.bg||'Няма превод за тази дума')),
-    h('button',{type:'button',class:'wtsay','aria-label':'Чуй думата',onclick:ev=>{ev.stopPropagation();try{say(r.w)}catch(e){}}},'🔊'));
+    h('button',{type:'button',class:'wtsay','aria-label':'Чуй думата',onclick:ev=>{ev.stopPropagation();try{say(r.w)}catch(e){}}},'🔊'),
+    twUnkBtn(r));
   document.body.append(tip);TW_TIP=tip;
   const b=el.getBoundingClientRect(),W=document.documentElement.clientWidth,tw=tip.offsetWidth,th=tip.offsetHeight;
   let left=b.left+b.width/2-tw/2;left=Math.max(8,Math.min(left,W-tw-8));
@@ -3103,6 +3128,10 @@ window.__BOOT=()=>{migrate();renderStats();renderManual();renderLevels();renderT
 .tw,.lsen .lw{cursor:pointer}
 .tw.wsel,.lw.wsel{background:var(--gold-soft);box-shadow:0 0 0 2px var(--gold);border-radius:4px;text-decoration:none}
 .twhint{margin:8px 2px;color:var(--muted);font-size:13.5px}
+.wunk{background:#FFE58A;color:#4A3400;border-radius:4px;box-shadow:0 0 0 1px #E9B500 inset}
+.lsen .lw.wunk.cur{background:#FFD23F}
+.wtunk{font:inherit;font-size:13px;font-weight:700;flex:none;min-height:36px;padding:4px 10px;border-radius:999px;border:1.5px solid #FFD23F;background:transparent;color:#FFD23F;cursor:pointer;white-space:nowrap}
+.wtunk.on{background:#FFD23F;color:#1A2230}
 .wtip{position:absolute;z-index:90;display:flex;align-items:center;gap:10px;max-width:min(320px,calc(100vw - 16px));padding:9px 12px;border-radius:14px;background:#1A2230;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.28);font-size:15px;line-height:1.3}
 .wtip .wtw{font-size:12px;opacity:.75;margin-bottom:1px}
 .wtip .wtb{font-weight:700}
@@ -6655,8 +6684,9 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
   const LSU=[['sc-7','dl-0','dl-11','dl-12','dl-4','bg-0'],['sc-0','sc-4','dl-8','dl-20','bg-1'],['sc-8','dl-21','dl-18','dl-9','bg-2'],['sc-1','dl-3','dl-13','dl-10','bg-3'],
     ['dl-2','dl-19','dl-16','bg-4'],['sc-5','dl-15','dl-6','bg-5'],['sc-3','sc-2','dl-1','dl-7','bg-6'],['sc-9','sc-6','dl-5','dl-14','dl-17','bg-7']];
   const ORDER2X=()=>{const o=[];for(let u=0;u<8;u++){o.push(...ORDER2.slice(u*4,u*4+4));if(window.__lsParts)LSU[u].forEach(c=>o.push('L:'+c,'B:L/'+c))}const byL=a=>a.map((c,i)=>[c,i]).sort((x,y)=>String(x[0].l).localeCompare(String(y[0].l))||x[1]-y[1]).map(x=>x[0].id);
-    byL(DATA.K).forEach(id=>o.push('D:'+id,'B:D/'+id));byL(DATA.TO).forEach(id=>o.push('O:'+id,'B:O/'+id));
-    if(window.__reCodes)o.push(...window.__reCodes());
+    const dB=[],oB=[];byL(DATA.K).forEach(id=>dB.push('D:'+id,'B:D/'+id));byL(DATA.TO).forEach(id=>oB.push('O:'+id,'B:O/'+id));
+    /* the recordings, Детектив and Изгубеният турист are ordered together from short and easy to long and hard (see ree.js) */
+    if(window.__reCodes)o.push(...window.__reCodes({D:dB,O:oB}));else o.push(...dB,...oB);
     sbMigrate(o);return o};
   /* students who are already past a listening do not have to go back for its new sentence-building step (once) */
   function sbMigrate(o){try{if(S.sbMig)return;const d=pst(2).done;let last=-1;o.forEach((c,i)=>{if(d[c]&&c[0]!=='B')last=i});
@@ -6943,7 +6973,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       area.replaceChildren(h('div',{class:'lesbar'},h('span',null,L.icon+' '+L.title),h('span',null,'Част '+(L.unit+1))),v,h('div',{class:'mnav'},go));
     }
     function finish(){
-      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||(L.kind==='sb'?(st.first-st.firstOk)<=(st.first>=5?1:0)&&st.first>0:pct>=90&&!(L.kind==='listen'&&!st.first)),stars=pct>=100?3:pct>=95?2:1;
+      const pct=st.first?Math.round(100*st.firstOk/st.first):100,pass=L.kind==='story'||((L.kind==='sb'||L.sbr)?(st.first-st.firstOk)<=(st.first>=5?1:0)&&st.first>0:pct>=90&&!(L.kind==='listen'&&!st.first)),stars=pct>=100?3:pct>=95?2:1;
       const inP2=ORDER2.includes(L.code)||L.kind==='listen'||L.kind==='case'||L.kind==='trip'||L.kind==='sb';
       /* Живи картини: in „Пътят напред" a passed lesson ends with 10 correct answers in pictures */
       if(inP2&&pass&&!st.picOk&&L.kind!=='listen'&&L.kind!=='case'&&L.kind!=='trip'&&L.kind!=='sb'&&window.__scnGate){try{const ui=L.unit|0,pos=ORDER2.indexOf(L.code)%4;
@@ -6956,7 +6986,7 @@ svg.bai.m-sad .b-head{animation:bSad 5s ease-in-out infinite}
       if(!pass){
         area.replaceChildren(h('div',{class:'done-card'},h('div',{class:'stars'},[0,1,2].map(()=>h('span',{class:'star off'},'⭐'))),
           h('div',{class:'acc'},h('div',{class:'big'},pct+'%'),h('span',{class:'lbl2'},'от първия опит')),
-          h('p',null,L.kind==='sb'?'За да продължите, допуска се '+(st.first>=5?'най-много 1 грешка':'0 грешки')+' от първия опит. Опитайте пак – изреченията се подреждат по-лесно втория път!':'За да продължите, трябват поне 90% от първия опит. Повторете урока – вторият път винаги е по-лесно!'),
+          h('p',null,(L.kind==='sb'||L.sbr)?'За да продължите, допуска се '+(st.first>=5?'най-много 1 грешка':'0 грешки')+' от първия опит. Опитайте пак – изреченията се подреждат по-лесно втория път!':'За да продължите, трябват поне 90% от първия опит. Повторете урока – вторият път винаги е по-лесно!'),
           h('button',{class:'btn rose huge',type:'button',onclick:()=>beginLesson(L.code)},'↻ Повтори урока'),
           h('button',{class:'btn alt',type:'button',onclick:()=>{renderPanel();try{window.scrollTo({top:0})}catch(e){}}},'Към пътеката')));
         return;
