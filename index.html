@@ -8095,6 +8095,8 @@ const LS_GQ={
   const sents=t=>(String(t).match(/[^.!?]+[.!?]+["”']?|[^.!?]+$/g)||[t]).map(x=>x.trim()).filter(Boolean);
   const unbrace=t=>String(t).replace(/\{([^;}]*)[^}]*\}/g,'$1');
   let PARTS=null;
+  /* a real recording with one start time per sentence (the Детектив recordings) */
+  const recOf=(key,n)=>{try{const m=AUD[key];return m&&m.s&&m.s.length===n?{url:'audio/'+key+'.mp3',s:m.s}:null}catch(e){return null}};
   function build(){
     if(PARTS)return PARTS;const P=[];
     LS_SC.forEach(sc=>P.push({g:'sc',t:sc.t,e:sc.e,kind:'Сцена',lines:sc.l.map(([s,en,bg])=>({s,en,bg})),
@@ -8104,9 +8106,10 @@ const LS_GQ={
       P.push({g:'bg',t:s[1],e:s[0]==='Диалог'?'💬':'📖',kind:s[0],lines:s[3].map(([sp,en,bg])=>({s:sp,en,bg})),q:(s[4]||[]).slice(0,5)})});
     (DATA.G||[]).forEach(g=>{P.push({g:'dl',t:g.t,e:'🗣️',kind:'Разговор',sub:g.d,
       lines:g.x.map(([sp,en,bg])=>{const m=String(en).match(/\{([^}]*)\}/);return {s:sp,en:unbrace(en),bg,raw:en,gap:m?m[1].split(';')[0]:null}}),q:LS_GQ[g.id]||[]})});
-    (DATA.K||[]).forEach(k=>{const E=sents(k.x),B=sents(k.b);const pair=E.length===B.length;
+    (DATA.K||[]).forEach(k=>{let E=sents(k.x),B=sents(k.b);
+      try{const m=AUD['det-'+k.id],A=auSplit(k.x);if(m&&m.s.length!==E.length&&m.s.length===A.length){E=A;const BA=auSplit(k.b);B=BA.length===A.length?BA:B}}catch(e){}const pair=E.length===B.length;
       P.push({g:'my',t:k.t,e:'🔎',kind:'История',sub:k.s,lines:E.map((en,i)=>({s:'',en,bg:pair?B[i]:''})),bgAll:pair?'':k.b,
-        q:(k.q||[]).slice(0,6).map(x=>[x[1],x[2][0],x[2][1],x[2][2]])})});
+        q:(k.q||[]).slice(0,6).map(x=>[x[1],x[2][0],x[2][1],x[2][2]]),rec:recOf('det-'+k.id,E.length)})});
     P.forEach((p,i)=>{p.id='p'+String(i+1).padStart(2,'0');p.n=i+1;
       const who=[];p.lines.forEach(l=>{if(l.s&&!who.includes(l.s))who.push(l.s);l.vi=l.s?who.indexOf(l.s)%2:0});p.dlg=who.length>1});
     return PARTS=P;
@@ -8197,7 +8200,8 @@ const LS_GQ={
       accRow.push(mk('GB','🇬🇧 Британски'),mk('US','🇺🇸 Американски'))}
     root.append(h('div',{class:'lstgs'},tg('lsTxt',true,'Aa Текст','Покажи или скрий английския текст'),tg('lsBg',false,'🇧🇬 Превод','Покажи превода'),
       tg('lsFol',true,'〰 Следене','Подчертава думата, която се чува, и превърта екрана'),part.q.length?tg('lsAns',false,'🔑 Отговори','Покажи верните отговори'):null,...accRow));
-    if(!TTS.ok||!(TTS.v||[]).length)root.append(h('p',{class:'lswarn'},'🔇 На това устройство не се намери английски глас. Можете да четете текста и да решавате задачите, а за звук свалете английски глас от настройките на телефона (Синтезиране на говор).'));
+    if(part.rec)root.append(h('p',{class:'lsrec'},'🎙️ Истински запис – „▶ Пусни всичко“ пуска целия запис, а ▶ до изречението пуска само него.'));
+    else if(!TTS.ok||!(TTS.v||[]).length)root.append(h('p',{class:'lswarn'},'🔇 На това устройство не се намери английски глас. Можете да четете текста и да решавате задачите, а за звук свалете английски глас от настройките на телефона (Синтезиране на говор).'));
     {const th=twHint();if(th)root.append(th)}
     /* jump links */
     const secs=[['lstr','Текст']];
@@ -8236,6 +8240,26 @@ const LS_GQ={
         speak(lines[i].en,lines[i].vi,{word:k=>word(i,k),end:()=>{clearW();setTimeout(()=>{if(g0===TTS.gen)step(i+1)},lines[i+1]&&lines[i+1].s!==lines[i].s?450:300)}})};
       setTimeout(()=>step(from||0),60)}
     pm.addEventListener('click',()=>{if(ST.mode==='all'){stopAll();return}const r=ST.resume;ST.resume=0;playAll(r)});
+    /* real recording: the same buttons play the mp3 – the whole file, or one sentence */
+    if(part.rec){const R=part.rec,au=new Audio();au.preload='auto';let ready=null,stopAt=null,raf=0,t0=0;
+      const load=()=>ready||(ready=fetch(R.url).then(r=>{if(!r.ok)throw 0;return r.blob()}).then(b=>{au.src=URL.createObjectURL(b);
+        return new Promise(ok=>{if(au.readyState>=1)return ok();au.addEventListener('loadedmetadata',ok,{once:true})})}).catch(e=>{ready=null;throw e}));
+      const at=t=>{let i=-1;for(let j=0;j<R.s.length;j++)if(R.s[j]-0.12<=t)i=j;return i};
+      const tick=()=>{if(!root.isConnected){au.pause();return}const t=au.currentTime;
+        if(stopAt!=null&&t>=stopAt){au.pause();return}
+        const i=at(t);if(i!==ST.i){ST.i=i;live(i);ui();if(ST.mode==='all')scrollTo(Math.max(0,i))}
+        if(!au.paused)raf=requestAnimationFrame(tick)};
+      au.addEventListener('play',()=>{t0=Date.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(tick)});
+      au.addEventListener('pause',()=>{cancelAnimationFrame(raf);addMs(Date.now()-t0);if(ST.mode==='all')ST.resume=au.ended?0:au.currentTime;
+        ST.mode=null;ST.i=-1;stopAt=null;live(-1);ui()});
+      au.addEventListener('ended',()=>{ST.resume=0;ui()});
+      const go=(from,end,mode,i)=>{ttsStop();ST.mode=mode;ST.i=i;live(i);ui();
+        load().then(()=>{if(ST.mode!==mode)return;au.currentTime=Math.max(0,from);stopAt=end;au.playbackRate=spd();au.play().catch(()=>{})}).catch(()=>{ST.mode=null;ui();pm.textContent='📶 Няма звук'})};
+      playOne=i=>{go(R.s[i]-0.05,R.s[i+1]!=null?R.s[i+1]-0.1:null,'one',i)};
+      playAll=from=>{go(from||0,null,'all',-1)};
+      const _sa=stopAll;stopAll=()=>{const m=ST.mode;try{au.pause()}catch(e){}if(m==='all')ST.resume=au.currentTime;_sa();if(m==='all')ST.resume=au.currentTime;ui()};
+      sp.addEventListener('change',()=>{au.playbackRate=spd()});
+      load().catch(()=>{})}
     root.__stop=stopAll;
     /* ---------------- questions ---------------- */
     const touch=()=>{VIEW.touched=true};
@@ -8486,7 +8510,10 @@ const LS_GQ={
   const st=document.createElement('style');
   st.textContent='.refree{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}.refree .lstg{flex:1 1 30%;min-height:44px}'+
     '.refree .lstg[aria-pressed="true"]{background:var(--rose);color:#fff;border-color:var(--rose)}'+
-    '.refin{margin:18px 0 8px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}.refin .big{font-size:40px;font-weight:800}';
+    '.refin{margin:18px 0 8px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}.refin .big{font-size:40px;font-weight:800}'+
+    /* the bottom menu stays visible here, so the player sits just above it instead of under it */
+    'body.refreev .lsdock{bottom:calc(var(--bnav-h,62px) + env(safe-area-inset-bottom,0px))!important;padding-bottom:8px!important;box-shadow:0 -4px 14px rgba(0,0,0,.08)}'+
+    'body.refreev #panel{padding-bottom:calc(var(--bnav-h,62px) + 96px)!important}body.refreev .gfab{bottom:calc(var(--bnav-h,62px) + 84px + env(safe-area-inset-bottom,0px))!important}';
   document.head.append(st);
   function open(id,step){S.reView={id,step:step||1};S.lsView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
   function close(){S.reView=null;save();renderPanel();try{window.scrollTo({top:0})}catch(e){}}
@@ -8523,9 +8550,10 @@ const LS_GQ={
   }
   const _rp=renderPanel;
   renderPanel=function(){
+    document.body.classList.remove('refreev');
     if(S.tab==='slush'&&S.reView){
       try{ttsStop()}catch(e){}const p=$p();p.replaceChildren();document.body.classList.remove('lsdocked');
-      try{if(view(p))return}catch(e){console.error(e);S.reView=null}
+      try{if(view(p)){document.body.classList.add('refreev');return}}catch(e){console.error(e);S.reView=null}
       p.replaceChildren();
     }
     if(S.tab!=='slush')S.reView=null;

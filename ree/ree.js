@@ -52,7 +52,7 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
 .rew.bg .lsbg{display:block}
 .rew.nofol .lw.cur{background:none;text-decoration:none}
 .relead{margin:0;font-size:14px;color:var(--muted);line-height:1.4}
-.redock{gap:6px}
+.redock{gap:6px} .reall{align-self:flex-start;margin:4px 0 8px;min-height:46px;padding:10px 18px;font-size:15.5px}
 .redock .rejump{font:inherit;font-size:13px;font-weight:700;min-width:44px;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .reseek{flex:1;min-width:60px;display:flex;flex-direction:column;gap:2px}
 .reseek input{width:100%;accent-color:var(--rose);margin:0}
@@ -275,11 +275,14 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
     const fwd=h('button',{type:'button',class:'rejump','aria-label':'5 секунди напред'},'5↻');
     const dock=h('div',{class:'lsdock redock'},back,pm,fwd,h('div',{class:'reseek'},rng,tm),sp);
     root.append(dock);
+    /* a clear "play the whole recording" button above the text, in every lesson */
+    const allb=h('button',{type:'button',class:'btn rose reall'},'▶ Пусни целия запис');
+    tr.before(allb);
     area.replaceChildren(root);document.body.classList.add('lsdocked');
     try{window.scrollTo({top:0})}catch(er){}
 
     /* playback: free play, one line, or a range of lines (stopAt) */
-    let stopAt=null,hearBtn=null,ready=false,curW=null,curL=-1,raf=0,dead=false,quiet=false;
+    let stopAt=null,hearBtn=null,ready=false,curW=null,curL=-1,raf=0,dead=false,quiet=false,whole=false;
     const T0=i=>lines[i][3][0]/100,T1=i=>lines[i][4]/100;
     function clearW(){if(curW){curW.classList.remove('cur');curW=null}}
     function live(i){if(i===curL)return;if(curL>=0&&LE[curL])LE[curL].classList.remove('live');curL=i;if(i>=0&&LE[i]){LE[i].classList.add('live');
@@ -298,16 +301,22 @@ window.__REE={"order":["travel","transport","driving","places","cities","weekend
       tm.textContent=fmt(t)+' / '+(au.duration?fmt(au.duration):'–:––');
       raf=requestAnimationFrame(tick)}
     function ui(){pm.textContent=au.paused?'▶':'⏸';pm.setAttribute('aria-label',au.paused?'Пусни':'Пауза');
+      allb.textContent=whole&&!au.paused?'⏸ Пауза':(whole&&!au.ended&&au.currentTime>1?'▶ Продължи записа':'▶ Пусни целия запис');
       if(au.paused&&hearBtn){hearBtn.classList.remove('on');hearBtn=null}}
-    au.addEventListener('play',ui);au.addEventListener('pause',ui);au.addEventListener('ended',()=>{stopAt=null;ui()});
+    au.addEventListener('play',ui);au.addEventListener('pause',ui);au.addEventListener('ended',()=>{stopAt=null;whole=false;ui()});
     function go(t,end){if(!ready){warn.hidden=false;warn.textContent='⏳ Записът още се зарежда…';return}
-      au.currentTime=Math.max(0,t);stopAt=end==null?null:end;au.playbackRate=+opt('spd',1);au.play().catch(()=>{})}
+      whole=end==null;au.currentTime=Math.max(0,t);stopAt=end==null?null:end;au.playbackRate=+opt('spd',1);au.play().catch(()=>{})}
     function playLine(i){quiet=false;go(T0(i)-0.08,T1(i)+0.25)}
     function hear(btn,a,z){if(hearBtn===btn&&!au.paused){au.pause();return}if(hearBtn)hearBtn.classList.remove('on');quiet=step!==2;go(T0(a)-0.08,T1(z)+0.3);hearBtn=btn;btn.classList.add('on')}
-    pm.addEventListener('click',()=>{if(!ready){warn.hidden=false;warn.textContent='⏳ Записът още се зарежда…';return}if(au.paused){stopAt=null;quiet=false;au.playbackRate=+opt('spd',1);au.play().catch(()=>{})}else au.pause()});
+    pm.addEventListener('click',()=>{if(!ready){warn.hidden=false;warn.textContent='⏳ Записът още се зарежда…';return}if(au.paused){whole=true;stopAt=null;quiet=false;au.playbackRate=+opt('spd',1);au.play().catch(()=>{})}else au.pause()});
+    allb.addEventListener('click',()=>{if(!ready){warn.hidden=false;warn.textContent='⏳ Записът още се зарежда…';return}
+      if(whole&&!au.paused){au.pause();return}
+      if(hearBtn){hearBtn.classList.remove('on');hearBtn=null}
+      if(!whole||au.ended||au.currentTime>=(au.duration||0)-0.5)au.currentTime=0;
+      whole=true;stopAt=null;quiet=false;au.playbackRate=+opt('spd',1);au.play().catch(()=>{})});
     back.addEventListener('click',()=>{if(ready)au.currentTime=Math.max(0,au.currentTime-5)});
     fwd.addEventListener('click',()=>{if(ready)au.currentTime=Math.min(au.duration||0,au.currentTime+5)});
-    rng.addEventListener('input',()=>{if(ready&&au.duration){au.currentTime=au.duration*rng.value/1000;stopAt=null}});
+    rng.addEventListener('input',()=>{if(ready&&au.duration){au.currentTime=au.duration*rng.value/1000;stopAt=null;whole=true;ui()}});
     function stop(full){try{au.pause()}catch(er){}if(full){dead=true;cancelAnimationFrame(raf);document.body.classList.remove('lsdocked');try{au.removeAttribute('src');au.load()}catch(er){}}}
     root.__stop=()=>stop(true);
     pm.disabled=false;
