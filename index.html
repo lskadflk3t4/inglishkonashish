@@ -1739,6 +1739,24 @@ function twHint(){return S.twSeen?null:h('p',{class:'twhint'},'👆 Докосн
 /* unknown words: tap a word → "⭐ Непозната" – it stays highlighted in every text until it is unmarked */
 function twKey(r){return r?(r.base||r.w):''}
 function twUnk(){if(!S.unk||typeof S.unk!=='object')S.unk={};return S.unk}
+/* the marked words as card objects for Флашкарти / the list in Речник */
+function unkCards(){const U=twUnk();return Object.keys(U).sort((a,b)=>(U[b].t||0)-(U[a].t||0)).map(k=>{
+  const v=(typeof byEn!=='undefined'&&byEn[k])?byEn[k][0]:null;let bg=U[k].bg||(v&&v.bg)||'';if(!bg){const r=twLookup(k);bg=(r&&r.bg)||'—'}
+  return {en:k,bg,em:v?v.em:'',pos:v?v.pos:'',t:-1,l:v?v.l:'',unk:1}})}
+function openUnkCards(){setOpt('fcT','unk');VOC_FC=true;S.tab='vocab';save();renderTabs();renderPanel();try{scrollTo(0,0)}catch(e){}}
+function unkPanel(){
+  const C=unkCards();
+  const box=h('details',{class:'unkbox',open:C.length?'':null},h('summary',null,'⭐ Моите непознати думи ',h('b',null,'('+C.length+')')));
+  if(!C.length){box.append(h('p',{class:'muted'},'Докоснете дума в текст (Слушалня, Детектив, Истински разговори…) и натиснете „⭐ Непозната“ – думата ще се появи тук и ще светне в жълто навсякъде.'));return box}
+  box.append(h('div',{class:'unkact'},h('button',{type:'button',class:'btn rose',onclick:openUnkCards},'🃏 Упражнявай ги като карти'),
+    h('span',{class:'muted'},'„Знам“ два пъти подред – думата излиза от списъка.')));
+  const list=h('div',{class:'vlist'});
+  C.forEach(v=>{const row=h('div',{class:'vrow'},h('span',{class:'e'},picOf(v)||'⭐'),h('div',{style:'min-width:0'},h('div',{class:'w',lang:'en'},v.en),h('div',{class:'b'},v.bg)),
+    h('button',{type:'button',class:'unksay','aria-label':'Чуй думата',onclick:()=>{try{say(v.en)}catch(e){}}},'🔊'),
+    h('button',{type:'button',class:'unkdel','aria-label':'Махни от непознатите',title:'Вече я знам',onclick:()=>{delete twUnk()[v.en];save();row.remove();
+      box.querySelector('summary b').textContent='('+Object.keys(twUnk()).length+')';try{twMarkAll()}catch(e){}}},'✓'));list.append(row)});
+  box.append(list);return box;
+}
 function twUnkBtn(r){
   const k=twKey(r);if(!k)return null;
   const b=h('button',{type:'button',class:'wtunk'});
@@ -2963,12 +2981,14 @@ function gVocab(p){
   const sw=chipGroup('Режим',[['list','📖 Речник'],['cards','🃏 Карти']],mode,k=>{setOpt('vMode',k);renderPanel()});sw.classList.add('vmode');
   if(mode==='cards'){gCards(p,sw);return}
   gVocabList(p);const ph=p.querySelector('.phead');if(ph)ph.after(sw);else p.prepend(sw);
+  try{sw.after(unkPanel())}catch(e){}
 }
 function gCards(p,sw){
   p.append(...head('Речник · карти','Бърз режим: една дума на карта. Плъзнете надясно, ако я знаете, наляво – ако не я знаете.',
     '<b>Как се играе:</b> плъзнете картата <b>надясно – „знам"</b>, <b>наляво – „не знам"</b>, <b>нагоре – чуйте думата</b>. Докоснете картата, за да видите превода. Думите с „не знам" отиват направо в „Преговор и грешки" за преговор утре. Можете да ползвате и бутоните отдолу.'));
   p.append(sw);
-  const th=h('select',{id:'vth','aria-label':'Тема'},h('option',{value:'first'},'⭐ Първите 100'),h('option',{value:'all'},'Всички теми'),DATA.T.map((t,i)=>h('option',{value:i},t[1])));
+  const nU=Object.keys(twUnk()).length;
+  const th=h('select',{id:'vth','aria-label':'Тема'},nU?h('option',{value:'unk'},'🟨 Моите непознати думи ('+nU+')'):null,h('option',{value:'first'},'⭐ Първите 100'),h('option',{value:'all'},'Всички теми'),DATA.T.map((t,i)=>h('option',{value:i},t[1])));
   if(VOC_T!=null){th.value=String(VOC_T);VOC_T=null}else{th.value=String(opt('fcT',f100Done()?'all':'first'));if(th.selectedIndex<0)th.value='all'}
   if(VOC_F100){th.value='first';VOC_F100=false}
   th.addEventListener('change',()=>{setOpt('fcT',th.value);deal()});
@@ -2979,6 +2999,8 @@ function gCards(p,sw){
   const N=20;let deck=[],i=0,known=0,unk=[];
   function deal(){
     fRow.replaceChildren(th.value==='first'?f100Row(false):'');
+    if(th.value==='unk'&&!Object.keys(twUnk()).length){th.value='all';setOpt('fcT','all')}
+    if(th.value==='unk'){deck=shuffle(unkCards()).slice(0,30);i=0;known=0;unk=[];draw();return}
     const pool=th.value==='first'?first100():V.filter(v=>(onlyL?v.l===onlyL:okLv(v.l))&&(th.value==='all'||v.t==+th.value));
     const seen=new Set();const uniq=shuffle(pool).filter(v=>!seen.has(v.en)&&seen.add(v.en));
     const sc=v=>S.w[v.en]||0;
@@ -3011,7 +3033,8 @@ function gCards(p,sw){
       c.style.transform=`translateX(${yes?'140%':'-140%'}) rotate(${yes?18:-18}deg)`;c.style.opacity='0';
       if(yes)known++;else unk.push(v.en);
       const y0=scrollY,keepY=()=>{if(Math.abs(scrollY-y0)>1)scrollTo({top:y0,behavior:'instant'})};
-      setTimeout(()=>{rec(v.en,!!yes);keepY()},0);buzz(yes?15:[20,40,20]);
+      if(v.unk){const U=twUnk(),u=U[v.en];if(u){u.ok=yes?(u.ok||0)+1:0;if(u.ok>=2)delete U[v.en]}}
+      setTimeout(()=>{rec(v.unk&&!byEn[v.en]?null:v.en,!!yes);keepY()},0);buzz(yes?15:[20,40,20]);
       setTimeout(()=>{i++;draw();keepY();requestAnimationFrame(keepY)},230)};
     bNo.onclick=()=>go(false);bYes.onclick=()=>go(true);bSay.onclick=hear;
     // swipe
@@ -3039,6 +3062,7 @@ function gCards(p,sw){
       h('div',{class:'big'},pct+'%'),
       h('div',null,`Знаете ${known} от ${deck.length} думи.`),
       h('div',{class:'fcsum'},h('span',null,'✓ знам ',h('b',null,known)),h('span',null,'✗ не знам ',h('b',null,unk.length))),
+      th.value==='unk'?h('div',{class:'sub'},`Непознати думи: остават ${Object.keys(twUnk()).length}. Дума, която познаете два пъти подред, излиза от списъка.`):
       unk.length?h('div',{class:'sub'},`Думите с „не знам" са в „Преговор и грешки" – ще ви чакат за преговор утре: ${unk.slice(0,8).join(', ')}${unk.length>8?'…':''}.`):null,
       h('button',{class:'btn rose',type:'button',onclick:deal},'Нови карти'),
       unk.length?h('button',{class:'btn alt',type:'button',onclick:()=>{S.tab='miss';save();renderTabs();renderPanel()}},'Към „Преговор и грешки"'):null));
@@ -3128,6 +3152,11 @@ window.__BOOT=()=>{migrate();renderStats();renderManual();renderLevels();renderT
 .tw,.lsen .lw{cursor:pointer}
 .tw.wsel,.lw.wsel{background:var(--gold-soft);box-shadow:0 0 0 2px var(--gold);border-radius:4px;text-decoration:none}
 .twhint{margin:8px 2px;color:var(--muted);font-size:13.5px}
+.unkbox{margin:6px 0 14px;padding:10px 14px;border:1.5px solid #E9B500;border-radius:16px;background:color-mix(in srgb,#FFE58A 22%,var(--surface))}
+.unkbox summary{cursor:pointer;font-weight:800;font-size:16px;min-height:36px;display:flex;align-items:center;gap:6px}
+.unkact{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:8px 0}.unkact .muted{font-size:13px}
+.unksay,.unkdel{font:inherit;flex:none;min-width:40px;min-height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.unkdel{color:var(--ok);font-weight:800}
 .wunk{background:#FFE58A;color:#4A3400;border-radius:4px;box-shadow:0 0 0 1px #E9B500 inset}
 .lsen .lw.wunk.cur{background:#FFD23F}
 .wtunk{font:inherit;font-size:13px;font-weight:700;flex:none;min-height:36px;padding:4px 10px;border-radius:999px;border:1.5px solid #FFD23F;background:transparent;color:#FFD23F;cursor:pointer;white-space:nowrap}
